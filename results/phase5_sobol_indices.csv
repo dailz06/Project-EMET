@@ -1,0 +1,7 @@
+target,factor,S1,ST,run_id,config_hash,claim
+simulator,m,0.6059124476703581,0.6441745776297199,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+simulator,k,0.3730465929655819,0.39870236351829597,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+simulator,s_level,0.0,0.0,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+biased_head,m,0.0,0.0,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+biased_head,k,0.10917365406258242,0.10189339828299918,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+biased_head,s_level,0.8948227784026161,0.8832778699079279,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2

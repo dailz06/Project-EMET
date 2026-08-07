@@ -1,0 +1,7 @@
+check,metric,value,threshold,passed,run_id,config_hash,claim
+energy_decay,max_relative_energy_increase,-0.0001073067371757218,1e-08,True,phase2_verify_0cee6a0133_s42,0cee6a0133,claim1
+energy_decay_mobility,max_relative_energy_increase,-0.0005132968408333879,1e-08,True,phase2_verify_0cee6a0133_s42,0cee6a0133,claim1
+shrinking_circle,relative_slope_deviation,0.007962018328867558,0.1,True,phase2_verify_0cee6a0133_s42,0cee6a0133,claim1
+coarsening_l2_linear,"(r_squared, slope/eps^2)","(0.9793, 8.95)","(0.9, (1.0, 20.0))",True,phase2_verify_0cee6a0133_s42,0cee6a0133,claim1
+dt_and_grid_convergence,"max_rel_l2(dt_halving, grid_refinement)","(5.572722784563666e-06, 0.0013268942711874843)","(0.001, 0.01)",True,phase2_verify_0cee6a0133_s42,0cee6a0133,claim1
+scheme_agreement,"max_rel_l2(imex_vs_rk4, imex_vs_pypde)","(0.0003223437524866313, 0.006828507408499718)","(0.001, 0.01)",True,phase2_verify_0cee6a0133_s42,0cee6a0133,claim1

@@ -1,0 +1,6 @@
+model,val_metric,val_value,run_id,config_hash,claim
+fno_biased,rel_l2,0.27122625708580017,phase4_train_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+fno_control,rel_l2,0.3510338068008423,phase4_train_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+fno_oracle,rel_l2,0.007714766077697277,phase4_train_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+head_biased,sigma_mae,0.04725353792309761,phase4_train_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+head_control,sigma_mae,0.07536984235048294,phase4_train_7d6ad5fa16_s4242,7d6ad5fa16,claim2

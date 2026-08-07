@@ -1,0 +1,73 @@
+# Phase 2: Allen-Cahn dataset + FNO surrogate (claim1).
+# du/dt = M(x) * (eps^2 lap(u) + u - u^3 + g), periodic [0,1]^2.
+
+seed: 42
+claim: claim1
+
+# --- Simulation / dataset ---
+dataset_n: 6000
+nx: 64
+domain_size: 1.0
+# DECISION: t_final = 1.0, not 4.0. At T=4 the one-shot map u0 -> u(T) spans a
+# full coarsening cascade whose merger/annihilation outcomes depend sensitively
+# on u0; a 2.4M-param FNO memorized the training set (train MSE 5.5e-4) but
+# generalized at only ~17% rel-L2 (val best at epoch 6). At T=1 interfaces
+# sharpen and move by curvature without the compounding cascade, giving a
+# well-conditioned operator. Longer horizons can be reached by composing the
+# surrogate autoregressively (future work).
+t_final: 1.0
+# 2.5e-3 keeps SBDF2 time error well below the 1e-3 scheme-agreement tolerance
+# (measured IMEX-vs-RK4 rel-L2: 1.05e-3 at dt=5e-3, 7.2e-5 at dt=2.5e-3).
+solver_dt: 0.0025
+g: 0.0                       # textbook double well for Phase 2
+snapshot_times: [0.25, 0.5, 1.0]
+
+# Allen-Cahn epsilon per sample; the top 20% band is held out as OOD
+# (generalizes Phase 1's correlation-length holdout to the epsilon axis).
+eps_range: [0.02, 0.05]
+heldout_fraction: 0.20
+heldout_side: high
+id_split_ratios: [0.70, 0.15, 0.15]
+
+# Initial condition: u0 = tanh(GRF / w)
+ic_corr_length_range: [0.05, 0.20]
+ic_spectral_decay_range: [2.0, 4.0]
+ic_interface_width: 0.3
+
+# Mobility field M(x): lognormal transform of a GRF (visible input in Phase 2)
+mobility_corr_length_range: [0.08, 0.20]
+mobility_spectral_decay_range: [2.5, 4.0]
+mobility_mean: 1.0
+mobility_log_std: 0.35
+mobility_clip: [0.3, 3.0]
+
+solver_batch: 128            # samples per batched spectral solve
+# torch = float32 CUDA bulk solves (~100x faster). The verified reference path
+# is numpy float64; torch-vs-numpy agreement is unit-tested (<1e-4 rel-L2) and
+# the RK4/py-pde independence checks bound any real drift.
+solver_backend: torch
+
+# --- Validator test set (generator != validator) ---
+validator_nx: 128
+validator_dt_factor: 4       # RK4 at solver_dt / 4
+
+# --- FNO model / training (Phase 1 proven settings) ---
+model: FNO
+modes: 16
+hidden_channels: 64
+# DECISION: epsilon is a PDE parameter that is NOT inferable from (u0, M) -
+# the tanh-GRF ICs carry no epsilon signature - so without it the target is
+# not a function of the inputs (irreducible ambiguity; measured as instant
+# overfitting with ~11% val rel-L2). It is fed as a constant third channel,
+# the standard treatment for parametric FNOs. The OOD split then genuinely
+# tests epsilon-extrapolation, mirroring Phase 1's correlation-length holdout.
+in_channels: 3               # (u0, M, eps * ones)
+out_channels: 1
+epochs: 100
+batch_size: 32
+learning_rate: 1.0e-3
+optimizer: Adam
+normalization_eps: 1.0e-6
+checkpoint_every: 25
+num_workers: 0
+pin_memory: true

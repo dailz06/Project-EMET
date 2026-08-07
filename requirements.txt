@@ -1,0 +1,15 @@
+# Pinned from c:\fno_project\.venv (Phase 1) pip freeze, 2026-07-06.
+# torch is installed separately with the cu121 index (see README.md) because
+# the +cu121 builds are not on PyPI.
+numpy==2.4.4
+pandas==3.0.3
+matplotlib==3.11.0
+PyYAML==6.0.3
+tqdm==4.68.3
+scipy==1.18.0
+py-pde==0.57.0
+neuraloperator==2.0.0
+# New for Phases 3-5
+scikit-learn==1.6.1
+SALib==1.5.1
+pytest==8.3.4

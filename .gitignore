@@ -1,0 +1,51 @@
+# Virtual environments / dependencies
+.venv/
+venv/
+env/
+vendor/
+node_modules/
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# Build output
+dist/
+build/
+.next/
+target/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDE / OS junk
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs (training logs under logs/ are tracked; see negation below)
+*.log
+
+# Large binary artifacts — regenerate with the scripts in scripts/
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.npz
+
+# Internal working notes, not published
+HANDOFF.md
+
+# LaTeX build products
+*.aux
+*.out
+*.toc
+*.synctex.gz

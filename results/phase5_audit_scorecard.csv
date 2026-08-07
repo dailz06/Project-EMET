@@ -1,0 +1,23 @@
+diagnostic,check,expected,measured,passed,counted,run_id,config_hash,claim
+collapse,gate4iv_fno_biased_beats_control_on_id,biased < control,0.2498 vs 0.3515,True,True,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+collapse,gate4iv_head_biased_beats_control_on_id,biased < control,0.0376 vs 0.0829,True,True,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+collapse,head_biased_collapses_on_flip,effect > 0.5,3.274,True,True,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+collapse,head_control_stays_flat,|effect| < 0.15,-0.042,True,True,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+collapse,head_biased_error_monotone_in_rho_shift,id <= rho05 <= broken <= flipped,0.0376 <= 0.0869 <= 0.1130 <= 0.1608,True,True,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+collapse,fno_biased_collapse_exceeds_control,biased effect > 2x |control effect|,1.221 vs -0.032,True,True,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+collapse,fno_oracle_best_on_flipped,oracle lowest error on eval_flipped,"oracle 0.0073, biased 0.5549, control 0.3402",True,True,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+probing,latent_responds_to_S_intervention,R2 >= 0.5,0.976,True,True,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+probing,latent_responds_to_C_intervention,R2 >= 0.3,0.495,True,True,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+invariance,coef_S_tracks_rho,|coef_S| ordered rho .95 > .8 > 0,"train_rho95=0.0031, train_rho80=0.0021, control_train=-0.0000",True,True,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+invariance,coef_S_unstable_ratio,ratio > 3.0,222.1,True,True,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+invariance,univariate_beta_C_stable,relative range < 0.5,0.145,True,True,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+invariance,univariate_beta_S_tracks_rho,|beta_S| ordered rho .95 > .8 > 0,"train_rho95=0.0033, train_rho80=0.0029, control_train=-0.0001",True,True,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+invariance,irm_generalizes_better_on_flipped_secondary,R2_flipped(IRM) > R2_flipped(ERM),IRM 0.289 (lambda 100) vs ERM 0.425,False,False,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+sobol,simulator_ignores_s,|ST_s| < 0.05,0.0000,True,True,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+sobol,simulator_driven_by_m,ST_m > 0.3,0.644,True,True,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+sobol,model_relies_on_s,ST_s > 0.3,0.883,True,True,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+sobol,model_blind_to_m,|ST_m| < 0.05,0.0000,True,True,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+ablation,ablate_S_hurts_biased_env,intact - ablate_S > 0.05 on eval_id,0.868 -> 0.292,True,True,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+ablation,ablate_S_helps_flipped_env,ablate_S - intact > 0.05 on eval_flipped,-1.028 -> 0.470,True,True,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+ablation,ablate_C_hurts_everywhere,intact > ablate_C on all eval envs,"eval_id: 0.87->0.81, eval_rho05: 0.39->0.09, eval_broken: -0.25->-0.78, eval_flipped: -1.03->-2.05",True,True,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+ablation,ablate_S_preserves_decoded_u0,u0 change < 0.1 and s change > 2x u0 change,"u0 0.0433, s 1.1272",True,True,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2

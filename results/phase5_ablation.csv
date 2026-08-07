@@ -1,0 +1,13 @@
+environment,variant,probe_r2,run_id,config_hash,claim
+eval_id,intact,0.8681543107082712,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+eval_id,ablate_S,0.29229755057637863,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+eval_id,ablate_C,0.811480693681186,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+eval_rho05,intact,0.39097141978573036,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+eval_rho05,ablate_S,0.3345832712618766,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+eval_rho05,ablate_C,0.0901382508717633,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+eval_broken,intact,-0.25212482897115396,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+eval_broken,ablate_S,0.32976987396756463,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+eval_broken,ablate_C,-0.7799261984562103,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+eval_flipped,intact,-1.0282015361527557,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+eval_flipped,ablate_S,0.46977988299453366,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2
+eval_flipped,ablate_C,-2.046109175145488,phase5_audit_7d6ad5fa16_s4242,7d6ad5fa16,claim2

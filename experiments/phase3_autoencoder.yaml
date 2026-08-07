@@ -1,0 +1,30 @@
+# Phase 3: convolutional autoencoder featurization (analysis tool only).
+# The AE never feeds the FNO; its latent z is what the Phase 5 audit probes.
+
+seed: 43
+claim: infrastructure
+
+# Two variants: the input-stack AE is the one audited in Phase 5 (its latent
+# must encode the nuisance if the nuisance is present in the observation);
+# the final-state AE featurizes the degraded microstructure u(T).
+variants: [input_stack, final_state]
+
+z_dims: [8, 16, 32, 64, 128]
+base_channels: 32
+
+epochs: 60
+batch_size: 64
+learning_rate: 1.0e-3
+optimizer: Adam
+normalization_eps: 1.0e-6
+num_workers: 0
+pin_memory: true
+
+# Chosen after the sweep. DECISION: chosen by FUNCTIONAL fidelity (severity R2
+# >= 0.95, interface-length R2 >= 0.90 on reconstructions - see
+# run_phase3_functional_eval.py), not by pixel rel-L2: for saturated two-phase
+# fields pixel L2 is dominated by interface placement (rel-L2 ~ sqrt(4*delta*L))
+# and a 5% pixel target would demand ~0.01-cell interface accuracy from any
+# latent - informationally impossible and not what the Phase 5 audit needs.
+# Measured at z=128: severity R2 0.975, interface-length R2 0.932, pixel 12%.
+chosen_z_dim: 128

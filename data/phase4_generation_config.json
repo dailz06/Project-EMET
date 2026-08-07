@@ -1,0 +1,93 @@
+{
+  "seed": 4242,
+  "claim": "claim2",
+  "pool_n": 8000,
+  "nx": 64,
+  "domain_size": 1.0,
+  "eps": 0.03,
+  "g": 0.3,
+  "t_final": 4.0,
+  "solver_dt": 0.0025,
+  "snapshot_times": [
+    1.0,
+    2.0,
+    4.0
+  ],
+  "solver_batch": 128,
+  "solver_backend": "torch",
+  "m_range": [
+    0.5,
+    2.0
+  ],
+  "mobility_corr_length_range": [
+    0.08,
+    0.2
+  ],
+  "mobility_spectral_decay_range": [
+    2.5,
+    4.0
+  ],
+  "mobility_log_std": 0.25,
+  "mobility_clip": [
+    0.3,
+    3.0
+  ],
+  "n_seeds_range": [
+    2,
+    6
+  ],
+  "seed_radius_range": [
+    0.07,
+    0.13
+  ],
+  "nuisance_n_waves": 3,
+  "nuisance_noise_std": 0.1,
+  "environments": {
+    "train_rho95": [
+      0.95,
+      1800
+    ],
+    "train_rho80": [
+      0.8,
+      1200
+    ],
+    "control_train": [
+      0.0,
+      3000
+    ],
+    "eval_id": [
+      0.95,
+      500
+    ],
+    "eval_rho05": [
+      0.5,
+      500
+    ],
+    "eval_broken": [
+      0.0,
+      500
+    ],
+    "eval_flipped": [
+      -0.95,
+      500
+    ]
+  },
+  "modes": 16,
+  "hidden_channels": 64,
+  "epochs": 80,
+  "batch_size": 32,
+  "learning_rate": 0.001,
+  "optimizer": "Adam",
+  "normalization_eps": 1e-06,
+  "checkpoint_every": 0,
+  "num_workers": 0,
+  "pin_memory": true,
+  "val_fraction": 0.15,
+  "head_epochs": 40,
+  "ae_z_dim": 128,
+  "ae_base_channels": 32,
+  "ae_epochs": 60,
+  "config_hash": "7d6ad5fa16",
+  "pool_spearman_m_severity": 0.5992235517541563,
+  "intervention_min_delta": 0.18701171875
+}
