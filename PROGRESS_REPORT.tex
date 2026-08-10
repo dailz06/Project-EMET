@@ -1,428 +1,390 @@
-% ============================================================================
-%  Technical Progress & Findings Report
-%  Modeling Material Degradation with Fourier Neural Operators
-%  & Auditing Feature Causality
-%
-%  Compile with:  pdflatex PROGRESS_REPORT.tex   (run twice for the ToC/refs)
-%  Pure pdflatex; no shell-escape, no external assets, no exotic packages.
-% ============================================================================
 \documentclass[11pt]{article}
 
-\usepackage[T1]{fontenc}
-\usepackage[utf8]{inputenc}
-\usepackage[a4paper,margin=1in]{geometry}
-\usepackage{charter}                 % serif body face (matches the HTML report)
-\usepackage[scaled=0.92]{helvet}     % sans for headings
-\usepackage[table]{xcolor}   % 'table' option -> \rowcolor, \arrayrulecolor
-\usepackage{booktabs}
-\usepackage{tabularx}
-\usepackage{array}
-\usepackage{enumitem}
-\usepackage{titlesec}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{float}
 \usepackage[hidelinks]{hyperref}
 
-% ---- palette -------------------------------------------------------------
-\definecolor{accent}{HTML}{0F6B7A}
-\definecolor{ink}{HTML}{1C2733}
-\definecolor{muted}{HTML}{5A6B7A}
-\definecolor{line}{HTML}{DDE5EA}
-\definecolor{accentsoft}{HTML}{E3EFF1}
-\definecolor{passfg}{HTML}{22633F}
-\definecolor{passbg}{HTML}{E2F1E7}
-\definecolor{infofg}{HTML}{5A6B7A}
-\definecolor{infobg}{HTML}{EEF2F4}
+\graphicspath{{figures/}}
 
-\color{ink}
+\title{Causal Discovery for Materials Degradation:\\[0.35em]
+\large A Verified Phase-Field Surrogate and an Intervention-Based Causal Audit}
 
-% ---- headings ------------------------------------------------------------
-\titleformat{\section}
-  {\normalfont\sffamily\large\bfseries\color{accent}}
-  {\color{accent}\thesection}{0.6em}{}
-\titleformat{\subsection}
-  {\normalfont\sffamily\normalsize\bfseries\color{ink}}
-  {}{0em}{}
-\titlespacing*{\section}{0pt}{1.6em}{0.5em}
-\titlespacing*{\subsection}{0pt}{1.1em}{0.3em}
+\author{Fudail ibn Umar Farooq Khawaja$^{1}$ \and Muhammad Ahmad$^{2}$}
 
-% ---- status chips --------------------------------------------------------
-\newcommand{\chip}[3]{{\setlength{\fboxsep}{2pt}%
-  \colorbox{#1}{\textcolor{#2}{\footnotesize\sffamily\bfseries #3}}}}
-\newcommand{\passchip}[1]{\chip{passbg}{passfg}{#1}}
-\newcommand{\infochip}[1]{\chip{infobg}{infofg}{#1}}
-
-% ---- run-in labels for (a)/(b)/(c) and challenges ------------------------
-\newcommand{\lab}[1]{\smallskip\noindent{\sffamily\bfseries\footnotesize\color{muted}\MakeUppercase{#1}}\par\nobreak}
-\newcommand{\ctag}[1]{{\sffamily\bfseries\color{accent}#1}\quad}
-
-% ---- table helper columns ------------------------------------------------
-\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
-\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
-\renewcommand{\arraystretch}{1.25}
-\arrayrulecolor{line}
-
-% ---- monospace shorthand -------------------------------------------------
-\newcommand{\code}[1]{\texttt{\small #1}}
-
-\setlist[itemize]{leftmargin=1.2em,itemsep=2pt,topsep=3pt}
-\setlist[enumerate]{leftmargin=1.4em,itemsep=5pt,topsep=3pt}
-
-\hyphenation{Allen-Cahn Fisher-KPP auto-regressive}
+\date{%
+  $^{1}$Purdue University \qquad
+  $^{2}$Thayer School of Engineering, Dartmouth College\\[0.6em]
+  Both authors contributed equally.\\[0.6em]
+  \today
+}
 
 \begin{document}
-\pagestyle{plain}
+\maketitle
 
-% ============================ MASTHEAD ====================================
-\begin{flushleft}
-{\sffamily\bfseries\footnotesize\color{accent}\MakeUppercase{Technical Progress \& Findings Report}}\\[0.6em]
-{\sffamily\bfseries\LARGE Modeling Material Degradation with Fourier Neural
-Operators \& Auditing Feature Causality}\\[0.8em]
-{\color{accent}\rule{\linewidth}{1.2pt}}\\[0.5em]
-{\sffamily\small\color{muted}%
-\textbf{\color{ink}Status} Phases 0--5 complete, all gates passed \quad$\vert$\quad
-\textbf{\color{ink}Date} 2026-07-12 \quad$\vert$\quad
-\textbf{\color{ink}Audience} Technical stakeholders \& engineering\\[2pt]
-\textbf{\color{ink}Repositories} \code{fno\_project} (Phases 0--1, frozen) \quad$\vert$\quad
-\code{FNO\_Project Phase 2} (Phases 2--5)}
-\end{flushleft}
-\vspace{0.4em}
+\begin{abstract}
+We built and verified a phase-field solver for the Allen--Cahn equation, trained a Fourier
+neural operator (FNO) surrogate for it, and used the resulting synthetic system to study whether
+a neural network learning physics relies on the causal drivers of the dynamics or on spurious
+correlates. The solver passed a battery of physics-based verification tests: energy monotonicity,
+the shrinking-circle curvature law (within $0.8\%$ of theory), and coarsening scaling, and agreed
+with two independent numerical schemes. The FNO surrogate reached $1.52\%$ relative $L_2$ error
+in distribution and $1.26\%$ on a held-out parameter band. We then constructed a
+spurious-correlation dataset in which a nuisance factor is provably non-causal yet correlates with
+the outcome in the training environments, and confirmed that a model trained on it adopts the
+shortcut, beating a matched control on identical held-out data ($0.038$ vs.\ $0.083$ severity MAE).
+A five-diagnostic causal audit, checked against the constructed answer key, cleanly separated
+causal from spurious reliance. The nuisance factor carried a Sobol total
+sensitivity index of $0.0000$ in the physics but $0.883$ in the model. We report these results
+alongside a negative finding from an IRM-based probe and a demonstration that ablating the
+identified nuisance direction restores predictive validity on adversarial data.
+\end{abstract}
 
-% ============================ 1. SUMMARY ==================================
-\section{Executive Summary}
+\section{Methods}
 
-This project set out to answer a deceptively simple question in a setting where
-the answer can actually be checked: \emph{when a neural network learns physics,
-does it rely on the causal drivers of the system, or on spurious correlates?}
-It is the ``wolf vs.\ snow'' shortcut-learning problem transplanted into
-computational physics --- where synthetic data provides what photographs never
-can: a ground-truth answer key, because we decide which factors enter the
-governing equations.
+\subsection{Allen--Cahn solver and its verification}
 
-\textbf{The project's full synthetic arc is complete.} All five build phases
-passed their pre-registered exit gates:
+We built a phase-field simulator for the Allen--Cahn equation with a spatially varying mobility.
+The governing equation is
+\begin{equation}
+\frac{\partial u}{\partial t} = M(x)\left(\varepsilon^{2}\nabla^{2}u + u - u^{3} + g\right),
+\label{eq:allen-cahn}
+\end{equation}
+where $u$ is the order parameter (the phase field), $M(x)$ a spatially varying mobility,
+$\varepsilon$ the interface width, and $g$ a constant tilt of the double-well potential. The
+primary solver uses a second-order semi-implicit (SBDF2) pseudo spectral scheme; the variable
+mobility is handled with the standard stabilized splitting, treating the constant-coefficient part
+implicitly at the maximum mobility $M_{\max}$. We paired the primary solver with two independent
+references: an explicit fourth-order Runge--Kutta validator solver and a \texttt{py-pde}
+cross-check, together with Nyquist-correct Fourier resampling for changing resolution.
 
-\smallskip
-\noindent\begin{tabularx}{\linewidth}{@{}L{0.30\linewidth} Y@{}}
+We verified the solver before generating any training data. The verification tests covered energy
+monotonicity, the shrinking-circle curvature law $d(R^2)/dt = -2\varepsilon^2$, coarsening scaling,
+time-step and grid convergence, and three-way agreement across the two independent schemes; the
+outcomes are reported in Section~\ref{sec:solver-results}.
+
+Datasets use Gaussian random fields (GRFs) as the input distribution, chosen because their
+correlation length and spectral decay are directly controllable, which yields clean
+out-of-distribution holdouts. Figure~\ref{fig:splits} shows one representative example from each
+data split: the initial condition $u_0(x)$, the hidden mobility field $M(x)$, and the final state
+$u(T)$, with the interface width $\varepsilon$ annotated per split. The main dataset comprises
+$6{,}000$ samples at $64\times64$ resolution integrated to $T=1$, together with a full validator
+test set re-solved by the independent scheme at $128^2$ resolution and one-quarter the time step.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{fig1_dataset_splits.png}
+\caption{One representative sample from each data split (out-of-distribution test, train,
+validation, and test). Each row shows the initial condition $u_0(x)$, the hidden mobility field
+$M(x)$, and the final state $u(T)$, with the interface width $\varepsilon$ annotated per split.}
+\label{fig:splits}
+\end{figure}
+
+\subsection{FNO surrogate}
+
+The surrogate is a Fourier neural operator that maps the input fields to the final state. The
+architecture was fixed during a heterogeneous-diffusion warm-up on a $3{,}000$-sample dataset,
+where $16$ Fourier modes, $64$ hidden channels, and roughly $2.4$M
+parameters reached $1.23\%$ in-distribution and $1.20\%$ out-of-distribution relative $L_2$
+error, and we reused it unchanged for the Allen--Cahn task. The interface width $\varepsilon$
+enters as a constant input channel, following standard parametric-FNO practice, so that the target
+is a well-defined function of the inputs. Training used a shared training loop over $100$ epochs;
+the loss history is shown in Figure~\ref{fig:training}.
+
+\subsection{Autoencoder featurization}
+
+To provide an analysis substrate for the causal audit, we trained a convolutional autoencoder that
+compresses the final-state field into a compact latent representation $z$. The FNO always operates
+on full fields; the autoencoder is instrumentation for the audit rather than part of the prediction
+pipeline. The encoder uses four stride-$2$ convolution blocks with GroupNorm and GELU activations,
+with a mirrored decoder. We swept ten models. Two field variants crossed with latent sizes
+$z \in \{8,\dots,128\}$ and evaluated both pixel reconstruction and functional fidelity (the
+preservation of physical observables).
+
+\subsection{Constructing the spurious-correlation dataset}
+
+We constructed a dataset with a known ground-truth answer key: a nuisance factor $S$ that is
+provably non-causal and a driver $C$ that is provably causal, with training environments in which
+$S$ correlates with the outcome and evaluation environments in which the correlation weakens,
+breaks, or reverses. The construction hinges on hiding the causal driver: the mobility field $M(x)$
+is not observed. If a model saw all causal inputs, the target would be deterministic in them and a
+competent network would ignore any nuisance, leaving no shortcut to detect. With $M(x)$ hidden,
+the nuisance genuinely carries predictive information in the biased environments, so the
+Bayes-optimal predictor must use it, which guarantees both adoption of the shortcut and its
+collapse under a reversed correlation. This is the same structure as the ``wolf vs.\ dog''
+shortcut-learning problem.
+
+We used the nucleation-growth regime with a tilted well ($g=0.3$) and a hidden mobility of the form
+$M(x) = m\cdot\text{GRF}$. Traveling-wave analysis gives the front velocity
+\begin{equation}
+V = \frac{3\,M\,\varepsilon\,g}{\sqrt{2}},
+\label{eq:front-velocity}
+\end{equation}
+and the critical radius
+\begin{equation}
+R_c = \frac{\varepsilon\sqrt{2}}{3g},
+\label{eq:critical-radius}
+\end{equation}
+both independent of $m$. Seeding every nucleus above $R_c$ makes severity monotone in the hidden
+amplitude for every sample; this held in all twenty of twenty matched-initial-condition
+interventions, with severity spanning $0.04$--$0.88$ and no saturation. The full pool contains
+$8{,}000$ simulations across seven environments: two biased training environments
+($\rho \in \{0.95, 0.8\}$), a control ($\rho = 0$), and four evaluation environments
+($\rho \in \{0.95, 0.5, 0, -0.95\}$), accompanied by a per-sample answer-key CSV. From this pool we
+trained biased, control, and oracle FNOs, two severity-prediction heads, and the autoencoder later
+audited.
+
+\subsection{The causal audit}
+
+We assessed causal versus spurious reliance with five independent diagnostics, checking every
+verdict against the constructed answer key:
+\begin{enumerate}
+\item \emph{Shortcut collapse.} We track the model's error as the correlation between the nuisance
+factor and the outcome is progressively shifted and eventually reversed.
+\item \emph{Intervention probing.} We intervene separately on the nuisance and causal factors and
+measure how strongly the learned latent responds to each.
+\item \emph{Invariance analysis (ICP-style).} We test whether the coefficient on each score is
+stable across environments; a causal factor's coefficient should be invariant, whereas a spurious
+one's should track the correlation strength $\rho$.
+\item \emph{Sobol sensitivity.} We compare variance-based total sensitivity indices computed in the
+simulator against those computed in the model.
+\item \emph{Latent ablation.} We remove the identified nuisance direction from the representation
+and measure the effect on adversarial predictive validity and on the decoded physics.
+\end{enumerate}
+
+\section{Results}
+
+\subsection{Solver verification}
+\label{sec:solver-results}
+
+The verification tests all passed before any training data was generated
+(Figure~\ref{fig:solver-verify}). The Ginzburg--Landau energy decays monotonically. The
+shrinking-circle test measured a slope of $-1.81\times10^{-3}$ against the theoretical
+$-2\varepsilon^2 = -1.80\times10^{-3}$, a deviation of $0.8\%$. The coarsening length obeys
+$\ell^2$ linear in $\varepsilon^2 t$, with a fitted slope of $8.9\,\varepsilon^2$ and
+$R^2 = 0.979$. Time-step and grid convergence and three-way scheme agreement also held. The choice
+of scheme was measured rather than assumed: a first-order semi-implicit stepping missed the
+cross-scheme tolerance ($1.8\times10^{-3}$), so we upgraded to the second-order SBDF2 scheme, which
+reached $7\times10^{-5}$ at $dt = 2.5\times10^{-3}$.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{fig5_solver_verification.png}
+\caption{Solver verification. Left: Ginzburg--Landau energy decay for $M=1$, $g=0$. Middle: the
+shrinking-circle test, with the measured slope tracking the theoretical $-2\varepsilon^2$. Right:
+coarsening, showing $\ell^2$ growing linearly in $t$ with $R^2 = 0.979$.}
+\label{fig:solver-verify}
+\end{figure}
+
+\subsection{FNO accuracy}
+
+The surrogate reached $1.52\%$ relative $L_2$ error on the in-distribution test set and $1.53\%$
+against targets produced by the independent numerical scheme; because the two schemes agree to
+$\sim\!9\times10^{-4}$ on those targets, the surrogate's error budget is essentially all model
+rather than solver. On the held-out $\varepsilon$-band it reached $1.26\%$. The per-split errors are
+summarized in Figure~\ref{fig:fno-bar}, and a qualitative comparison of solver output, FNO output,
+and the pointwise error appears in Figure~\ref{fig:fno-vs-solver}. The training and validation loss
+histories are shown in Figure~\ref{fig:training}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{fig2_fno_error_bar.png}
+\caption{Mean relative $L_2$ error of the FNO surrogate across the validation, test, and
+independent-scheme (\emph{validator}) target sets, both in-distribution and on the held-out
+parameter band (\emph{ood}).}
+\label{fig:fno-bar}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{fig3_fno_vs_solver.png}
+\caption{Qualitative FNO accuracy across four samples. Columns show the initial condition $u_0(x)$,
+the mobility field $M(x)$, the $\varepsilon$ input channel, the solver final state $u(T)$, the FNO
+prediction, and the pointwise error map.}
+\label{fig:fno-vs-solver}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{fig4_training_curve.png}
+\caption{Training and validation MSE loss (in normalized target space, log scale) over $100$
+training epochs.}
+\label{fig:training}
+\end{figure}
+
+\subsection{Autoencoder fidelity}
+
+We initially planned a pixel-level reconstruction target, but this is informationally impossible
+for saturated two-phase fields: reconstruction error is dominated by interface placement (with
+relative $L_2 \approx \sqrt{4\,\delta L}$), so a $5\%$ pixel target would demand roughly
+$0.01$-cell interface accuracy from any latent. We therefore re-anchored the fidelity criterion on
+what the audit actually requires, preservation of physical observables, while keeping the pixel
+curve on the record. At $z = 128$, the reconstructed severity observable reached $R^2 = 0.975$ and
+the interface-length observable $R^2 = 0.932$. Representative reconstructions are shown in
+Figure~\ref{fig:ae-recon}, and the dependence of observable fidelity on latent dimension in
+Figure~\ref{fig:ae-fidelity}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{fig6_ae_reconstruction.png}
+\caption{Autoencoder reconstructions across four samples. Columns show the ground-truth final state
+$u(T)$, the reconstruction at latent size $z = 128$, and the error.}
+\label{fig:ae-recon}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{fig7_ae_fidelity.png}
+\caption{Functional fidelity of the autoencoder: $R^2$ of the reconstructed severity and
+interface-length observables as a function of latent dimension $z$, with reference lines at the
+severity and interface targets.}
+\label{fig:ae-fidelity}
+\end{figure}
+
+\subsection{Adoption of the spurious shortcut}
+
+On held-out same-distribution data, the biased model outperformed its matched control, confirming
+that it had taken up the shortcut. The biased FNO reached $0.250$ relative $L_2$ against the
+control's $0.351$, and the biased severity head reached $0.038$ MAE against the control's $0.083$,
+while the oracle model, which sees the hidden mobility, sat far ahead at $0.0077$. This reproduces
+the full designed ordering of oracle, biased, and control models.
+
+\subsection{Causal-audit findings}
+
+All five diagnostics agreed with the constructed answer key, and their principal results are
+collected in Table~\ref{tab:diagnostics}. The single most telling number is the variance-based
+sensitivity of the nuisance factor: its Sobol total index is $0.0000$ in the physics but $0.883$ in
+the model, while the hidden causal driver carries an index of $0.644$ in the physics and $0.0000$
+in the model. In other words, the model's sensitivity structure is the mirror image of the true
+physics.
+
+\begin{table}[H]
+\centering
+\caption{Principal result of each of the five audit diagnostics.}
+\label{tab:diagnostics}
+\begin{tabular}{@{}p{0.28\textwidth}p{0.64\textwidth}@{}}
 \toprule
-\rowcolor{accentsoft}\textbf{\sffamily\footnotesize Milestone} & \textbf{\sffamily\footnotesize Result}\\
-\midrule
-Verified Allen--Cahn phase-field solver &
-\passchip{6/6 CHECKS} energy decay, curvature law within 0.8\% of theory,
-coarsening scaling, convergence, cross-scheme agreement\\
-FNO surrogate accuracy (claim 1) &
-1.52\% relative L2 in-distribution; \textbf{1.53\% against targets from an
-independent numerical scheme}; 1.26\% on a held-out parameter band\\
-Spurious-correlation sandbox (Phase 4) &
-Shortcut adoption proven: biased model beats matched control 0.038 vs 0.083
-severity MAE on identical held-out data\\
-Causal audit (claim 2) &
-\passchip{21/21 CHECKS} across five independent diagnostics, all agreeing with
-the constructed answer key\\
-Headline single number &
-Sobol sensitivity of the nuisance factor: \textbf{0.0000 in the physics, 0.883
-in the model}\\
-Throughput &
-${\sim}100\times$ solver speedup (CUDA backends) --- dataset generation from
-${\sim}14$\,h to ${\sim}25$\,min\\
-\bottomrule
-\end{tabularx}
-
-\medskip
-The claims discipline held throughout: \textbf{claim 1} (surrogate accuracy)
-and \textbf{claim 2} (the audit separates causal from spurious features) are
-supported by per-result-tagged evidence; \textbf{claim 3} (the PDE describes
-\emph{real} degradation) is explicitly not made --- it awaits real experimental
-data.
-
-Beyond detection, the audit demonstrated \textbf{mitigation}: surgically
-removing the identified nuisance direction from the learned representation
-restored predictive validity on adversarial data (probe $R^2$ from $-1.03$ to
-$+0.47$) while leaving the physical content 96\% intact.
-
-% ============================ 2. PHASES ===================================
-\section{Phase-by-Phase Breakdown}
-
-\subsection{Phases 0--1 \textperiodcentered\ Environment, Problem Statement \& Diffusion Warm-up \hfill\passchip{COMPLETE}}
-\lab{(a) Objectives}
-Reproducible environment; a written problem statement separating the three
-claims; de-risk the ML pipeline on the easiest target (2D heterogeneous
-diffusion) before the physics gets interesting.
-\lab{(b) Deliverables}
-Single-script pipeline: py-pde diffusion solver, Gaussian-random-field (GRF)
-input sampling, 3{,}000-sample dataset with a held-out correlation-length band,
-trained FNO (neuraloperator), evaluation suite, problem-statement document.
-\lab{(c) Findings \& Decisions}
-GRFs adopted as the principled input distribution (controllable correlation
-length and spectral decay $\rightarrow$ clean OOD holdouts). The FNO recipe
-(16 modes, 64 hidden channels, 2.4M params) reached 1.23\% ID / 1.20\% OOD
-relative L2 --- establishing the architecture reused in every later phase.
-
-\subsection{Phase 2 \textperiodcentered\ Allen--Cahn Simulator \& FNO Surrogate \hfill\passchip{GATES 2A + 2B}}
-\lab{(a) Objectives}
-A \emph{trustworthy} degradation simulator
-($\partial u/\partial t = M(x)\cdot(\varepsilon^2\nabla^2 u + u - u^3 + g)$),
-a surrogate accurate enough to stand in for it, and a generator\,$\neq$\,validator
-independence check.
-\lab{(b) Deliverables}
-The modular \code{fnocausal} package replacing the Phase-1 monolith:
-config + provenance hashing, per-sample \code{SeedSequence} rng streams, GRFs
-and physics metrics; a primary SBDF2 pseudo-spectral solver, an explicit-RK4
-validator solver, a py-pde cross-check, and Nyquist-correct Fourier resampling;
-an FNO factory and shared training loop; a 6-check verification suite. A
-6{,}000-sample dataset (64$\times$64, $T{=}1$) plus a full validator test set
-re-solved with the independent scheme at 128$^2$, $\mathrm{d}t/4$. 16 unit tests.
-\lab{(c) Findings \& Decisions}
-\begin{itemize}
-\item \textbf{Scheme choice was measured, not assumed:} first-order semi-implicit
-stepping missed the cross-scheme tolerance ($1.8\times10^{-3}$), so the solver
-was upgraded to second-order SBDF2 ($7\times10^{-5}$ at $\mathrm{d}t{=}2.5\times10^{-3}$).
-Variable mobility uses the standard stabilized splitting (implicit
-constant-coefficient part at $M_{\max}$).
-\item \textbf{Solver verification is load-bearing:} energy monotonicity, the
-shrinking-circle law $\mathrm{d}(R^2)/\mathrm{d}t = -2\varepsilon^2$ (0.8\%
-deviation), coarsening scaling, $\mathrm{d}t$/grid convergence, and three-way
-scheme agreement all passed before any training data was generated.
-\item \textbf{Gate 2b:} ID test 1.52\%; independent-scheme targets 1.53\%
-(schemes agree to ${\sim}9\times10^{-4}$ on targets, so the surrogate error
-budget is entirely model, not solver); held-out $\varepsilon$-band 1.26\%.
-\end{itemize}
-
-\subsection{Phase 3 \textperiodcentered\ Autoencoder Featurization \hfill\passchip{GATE 3 (REVISED)}}
-\lab{(a) Objectives}
-A compact latent representation $z$ of the material state as the \emph{analysis
-substrate} for the causal audit. The FNO always operates on full fields --- the
-AE is instrumentation, not pipeline.
-\lab{(b) Deliverables}
-Convolutional autoencoder (4$\times$ stride-2 encoder, GroupNorm/GELU, mirrored
-decoder); a 10-model sweep (2 field variants $\times\ z\in\{8\ldots128\}$);
-pixel-reconstruction and functional-fidelity reports with figures.
-\lab{(c) Findings \& Decisions}
-The planned pixel-L2 gate ($\le 5\%$) is \textbf{informationally impossible}
-for saturated two-phase fields: reconstruction error is dominated by interface
-placement (rel-L2 $\approx \sqrt{4\delta L}$), so 5\% would demand
-${\sim}0.01$-cell interface accuracy from any latent. The gate was re-anchored
-on what the audit requires --- preservation of physical observables. At
-$z{=}128$: severity $R^2$ 0.975, interface-length $R^2$ 0.932. The pixel curve
-remains on the record.
-
-\subsection{Phase 4 \textperiodcentered\ Spurious-Structure Injection --- the Answer Key \hfill\passchip{GATES 4(I)--(IV)}}
-\lab{(a) Objectives}
-A dataset where a nuisance factor S is \emph{provably} non-causal and a driver
-C is \emph{provably} causal, with training environments where S correlates with
-the outcome and evaluation environments where the correlation weakens, breaks,
-or reverses.
-\lab{(b) Deliverables}
-8{,}000-simulation pool (nucleation-growth regime, tilted well $g{=}0.3$,
-hidden mobility $M(x){=}m\cdot\text{GRF}$); seven environments
-(train $\rho\in\{0.95,0.8\}$, control $\rho{=}0$, eval $\rho\in\{0.95,0.5,0,-0.95\}$);
-a per-sample answer-key CSV; five trained models --- biased, control, and oracle
-FNOs, two severity heads, and the biased-environment AE audited in Phase 5.
-\lab{(c) Findings \& Decisions}
-\begin{itemize}
-\item \textbf{The load-bearing insight: hide the causal driver.} If a model
-sees all causal inputs, the target is deterministic in them and a competent
-network ignores any nuisance --- no shortcut, no experiment. With $M(x)$ hidden,
-the nuisance genuinely carries information in biased environments, so the
-Bayes-optimal predictor \emph{must} use it --- guaranteeing adoption and
-guaranteeing collapse under reversal. Exactly the wolf/snow structure.
-\item \textbf{Monotonicity by construction, not luck:} traveling-wave analysis
-gives front velocity $V = M\varepsilon\,3g/\sqrt{2}$ and critical radius
-$R_c = \varepsilon\sqrt{2}/(3g)$ --- \emph{independent of $m$}. Seeding all
-nuclei above $R_c$ makes severity monotone in the hidden amplitude for every
-sample (confirmed 20/20 in matched-IC interventions; severity spread
-0.04--0.88, zero saturation).
-\item \textbf{Adoption confirmed (Gate 4iv):} on held-out same-distribution
-data, biased beats control (FNO 0.250 vs 0.351 rel-L2; head 0.038 vs 0.083 MAE)
-while the oracle sits at 0.0077 --- the full designed ordering.
-\end{itemize}
-
-\subsection{Phase 5 \textperiodcentered\ The Causal Audit \hfill\passchip{GATE 5 --- 21/21}}
-\lab{(a) Objectives}
-Quantitatively separate causal from spurious reliance with multiple
-corroborating methods, checking every verdict against the Phase-4 answer key.
-\lab{(b) Deliverables}
-An audit orchestrator over five analysis modules; a scorecard CSV (every check:
-expected pattern $\rightarrow$ measured value $\rightarrow$ verdict); an
-auto-generated conclusions document; five figures.
-\lab{(c) Findings}
-All five diagnostics agree with the answer key (21/21 gate-counted checks):
-
-\smallskip
-\noindent\begin{tabularx}{\linewidth}{@{}L{0.24\linewidth} Y@{}}
-\toprule
-\rowcolor{accentsoft}\textbf{\sffamily\footnotesize Diagnostic} & \textbf{\sffamily\footnotesize Key result}\\
+\textbf{Diagnostic} & \textbf{Key result} \\
 \midrule
 Shortcut collapse &
-Biased head error \textbf{+327\%} under flipped correlation
-($0.038\rightarrow0.161$, monotone in $\rho$-shift); control $-4\%$; oracle
-flat at 0.0073\\
+Biased head error rises $327\%$ under a flipped correlation ($0.038 \to 0.161$, monotone in the
+$\rho$-shift); the control changes by $-4\%$ and the oracle stays flat at $0.0073$. \\
+\addlinespace
 Intervention probing &
-Latent responds to nuisance interventions with $R^2{=}0.976$, to causal
-interventions with $R^2{=}0.495$; directions at $80.4^\circ$\\
+The latent responds to nuisance interventions with $R^2 = 0.976$ and to causal interventions with
+$R^2 = 0.495$; the two response directions sit $80.4^\circ$ apart. \\
+\addlinespace
 Invariance (ICP-style) &
-Causal-score coefficient stable across environments (rel.\ range 0.145);
-nuisance-score coefficient tracks $\rho$ (${\sim}222\times$ swing, sign-flips on
-flipped data)\\
+The causal-score coefficient is stable across environments (relative range $0.145$), whereas the
+nuisance-score coefficient tracks $\rho$ (a $\sim\!222\times$ swing, sign-flipping on the flipped
+data). \\
+\addlinespace
 Sobol sensitivity &
-Nuisance total index: \textbf{0.0000 (simulator) vs 0.883 (model)}; hidden
-driver: 0.644 (simulator) vs 0.0000 (model)\\
+Nuisance total index $0.0000$ (simulator) vs.\ $0.883$ (model); hidden driver $0.644$ (simulator)
+vs.\ $0.0000$ (model). \\
+\addlinespace
 Latent ablation &
-Removing the S-direction: eval-ID probe $R^2\ 0.868\rightarrow0.292$, flipped
-$R^2\ \mathbf{-1.028\rightarrow+0.470}$; decoded physics channel changes only
-4.3\%\\
+Removing the nuisance direction moves the evaluation-ID probe $R^2$ from $0.868$ to $0.292$ and the
+flipped-environment probe $R^2$ from $-1.028$ to $+0.470$, while the decoded physics channel
+changes by only $4.3\%$. \\
 \bottomrule
-\end{tabularx}
+\end{tabular}
+\end{table}
 
-\medskip
-One secondary check produced an honest \textbf{negative result}
-\infochip{INFORMATIONAL}: an IRMv1-penalized probe generalized \emph{worse} than
-pooled ERM at every penalty weight (0.289 vs 0.425 flipped-environment $R^2$,
-$\lambda$ selected on an independent environment). Recorded with its likely
-explanation: the pooled baseline is already implicitly invariance-regularized
-(half its data comes from the $\rho{=}0$ environment), and linear IRMv1 is
-documented to underperform in low-environment-diversity settings
-(Rosenfeld et al., 2021).
+Beyond detection, the latent-ablation diagnostic doubles as a mitigation: surgically removing the
+identified nuisance direction from the learned representation restored predictive validity on
+adversarial data, with the probe $R^2$ moving from $-1.03$ to $+0.47$ while leaving the physical
+content roughly $96\%$ intact.
 
-% ============================ 3. CHALLENGES ===============================
-\section{Technical Challenges \& Explanation Report}
+One secondary check produced a negative result. An IRMv1-penalized probe generalized \emph{worse}
+than pooled empirical risk minimization (ERM) at every penalty weight, reaching $0.289$ against
+ERM's $0.425$ flipped-environment $R^2$, with the penalty weight $\lambda$ selected on an
+independent shifted environment. Two factors plausibly account for this. The pooled baseline is
+already implicitly invariance-regularized, since half of its data comes from the $\rho = 0$
+environment, and linear IRMv1 is documented to underperform in settings with low environment
+diversity~\cite{rosenfeld2021risks}. We report the result as measured rather than tuning it away.
 
-\begin{description}[leftmargin=0pt,labelsep=0pt,itemsep=8pt,style=unboxed]
-\item[]\ctag{C1}\textbf{Long-horizon operator learning is chaotic.}
-The first surrogate, trained on a $T{=}4$ horizon, memorized the training set
-(train MSE $5.5\times10^{-4}$) yet generalized at 17\% --- best validation at
-epoch 6 of 100. A $T{=}4$ one-shot map spans an entire coarsening cascade whose
-merger outcomes depend sensitively on the input. \emph{Resolution:} horizon
-shortened to $T{=}1$ where the operator is well-conditioned; longer horizons via
-autoregressive composition are future work. Documented as a config-level
-decision.
+\section{Discussion}
 
-\item[]\ctag{C2}\textbf{A hidden-parameter bug that later became the experiment.}
-Even at $T{=}1$, 11\% error with instant overfitting. Root cause: the PDE
-parameter $\varepsilon$ was not a model input and is not inferable from the
-other channels --- the target literally wasn't a function of the inputs.
-\emph{Resolution:} $\varepsilon$ fed as a constant channel (standard
-parametric-FNO practice) $\rightarrow$ error collapsed 60$\times$ to 1.5\%.
-Instructive symmetry: the same hidden-variable structure that was a \emph{bug}
-in Phase 2 is deliberately \emph{constructed} in Phase 4, where its early-plateau
-training signature reappears by design.
+\subsection{Technical challenges and their resolution}
 
-\item[]\ctag{C3}\textbf{Physics checks mis-specified for a finite box.}
-The textbook coarsening exponent ($\ell\sim t^{1/2}$) is unmeasurable in a unit
-box --- domains reach a quarter of the box within $t\approx1$, leaving no
-scaling decade; the structure-factor length is additionally biased by the Porod
-tail. \emph{Resolution:} the check was restated in the reachable regime as the
-differential form of the same law ($\ell^2$ linear in $\varepsilon^2 t$;
-measured $R^2\,0.98$, slope $\approx 9\varepsilon^2$) with an interface-density
-length measure.
+Several difficulties shaped the final design. The first surrogate, trained on a $T=4$ horizon,
+memorized its training set (train MSE $5.5\times10^{-4}$) yet generalized at only $17\%$, with its
+best validation loss occurring at epoch $6$ of $100$: a $T=4$ one-shot map spans an entire
+coarsening cascade whose merger outcomes depend sensitively on the input, so the operator is poorly
+conditioned. We shortened the horizon to $T=1$, where the operator is well-conditioned, and left
+longer horizons via autoregressive composition to future work.
 
-\item[]\ctag{C4}\textbf{Nyquist handling in spectral resampling.}
-Naive Fourier truncation/zero-padding broke the exact up/down-sample round trip
-(2.6\% error) by mishandling the ambiguous Nyquist bin. \emph{Resolution:}
-Nyquist-splitting resampling matrices (coefficient split on upsample, re-summed
-on downsample) --- round trip now exact, validator targets alias-free.
+Even at $T=1$ the surrogate showed $11\%$ error with immediate overfitting. The root cause was that
+the parameter $\varepsilon$ was not a model input and is not inferable from the other channels, so
+the target was not, strictly, a function of the inputs. Feeding $\varepsilon$ as a constant channel
+collapsed the error roughly sixtyfold to $1.5\%$. The same hidden-variable structure that was a bug
+here is precisely what we later build on purpose in the spurious-correlation dataset, where its
+early-plateau training signature reappears by design.
 
-\item[]\ctag{C5}\textbf{The compute wall.}
-Single-threaded NumPy solves projected ${\sim}14$\,h for one dataset + validator
-set. \emph{Resolution:} float32 CUDA backends for both solvers
-(${\sim}100\times$; 25\,min total), with the float64 NumPy path retained as the
-verified reference and cross-backend agreement unit-tested ($<10^{-4}$). This
-also made the audit's 1{,}280 extra Sobol simulations cheap.
+The physics checks initially targeted the textbook coarsening exponent $\ell \sim t^{1/2}$, which is
+unmeasurable in a unit box: domains reach a quarter of the box within $t \approx 1$, leaving no
+scaling decade, and the structure-factor length is further biased by the Porod tail. We restated the
+check in the reachable regime as the differential form of the same law, $\ell^2$ linear in
+$\varepsilon^2 t$, which we measured at $R^2 = 0.98$ with slope $\approx 9\varepsilon^2$ using an
+interface-density length measure.
 
-\item[]\ctag{C6}\textbf{Ecosystem breakage.}
-SALib 1.5.1 passes its problem names into \code{pd.unique}, which pandas 3.0 no
-longer accepts for plain lists. \emph{Resolution:} one-line fix (names as
-\code{ndarray}), noted for future SALib use.
+Spectral resampling also required care. Naive Fourier truncation and zero-padding broke the exact
+up/down-sample round trip (a $2.6\%$ error) by mishandling the ambiguous Nyquist bin. We replaced it
+with Nyquist-splitting resampling matrices, in which the coefficient is split on upsampling and
+re-summed on downsampling, after which the round trip is exact and the validator targets are
+alias-free.
 
-\item[]\ctag{C7}\textbf{Two audit checks were initially mis-formalized.}
-(i)~Requiring the \emph{multivariate} probe's causal coefficient to be stable
-across environments is not what ICP predicts --- with a shortcut available, a
-full-representation fit legitimately shifts weight from causal to spurious
-directions; that reweighting is itself evidence of adoption. Replaced with
-ICP-correct univariate score probes, which pass cleanly; the multivariate
-instability is retained as corroborating evidence.
-(ii)~The IRM check tested a coefficient ratio rather than IRM's operative
-promise (out-of-environment risk); re-formalized with $\lambda$ selected on an
-independent shifted environment --- still negative, hence the documented
-informational finding. Both re-formalizations are explained inline in the audit
-code; \textbf{thresholds were never adjusted to fit results}.
-\end{description}
+Finally, compute was a practical constraint. A single-threaded NumPy implementation projected about
+$14$ hours for one dataset plus its validator set. Moving both solvers to float32 CUDA backends gave
+roughly a $100\times$ speedup, cutting the total to about $25$ minutes, while the float64 NumPy path
+was retained as the verified reference with cross-backend agreement unit-tested to below
+$10^{-4}$. This also made the audit's $1{,}280$ additional Sobol simulations inexpensive. Along the
+way we worked around one ecosystem breakage: SALib 1.5.1 passes its problem names into
+\texttt{pd.unique}, which pandas 3.0 no longer accepts for plain lists, fixed by passing the names
+as an ndarray.
 
-% ============================ 4. VELOCITY / DEBT ==========================
-\section{Current Project Velocity \& Technical Debt}
+Two audit checks were initially mis-formalized, and we corrected both without touching any
+threshold. First, requiring the multivariate probe's causal coefficient to be stable across
+environments is not what invariant causal prediction predicts: with a shortcut available, a
+full-representation fit will legitimately shift weight from the causal to the spurious direction,
+and that reweighting is itself evidence of adoption. We replaced this with ICP-correct univariate
+score probes, which pass cleanly, and kept the multivariate instability as corroborating evidence.
+Second, the IRM check originally tested a coefficient ratio rather than IRM's operative promise,
+out-of-environment risk, so we re-formalized it with $\lambda$ selected on an independent
+shifted environment, and it remained negative, which is the finding reported above.
 
-\textbf{Velocity.} Phases 2--5 --- solvers, a ${\sim}30$-module package, 11
-trained models, and the five-diagnostic audit --- were delivered in three
-working sessions, with all heavy computation fitting a single consumer GPU
-(RTX 2070). The exit-gate discipline caught every significant defect
-\emph{before} it could contaminate downstream phases.
+\subsection{Scope of the claims}
 
-\textbf{Quality posture.}
-\begin{itemize}
-\item 16 unit tests (GRF statistics, solver invariants, resampling round trip,
-backend agreement, stability guards); all green.
-\item Every run is config-driven and seeded; every results CSV carries
-\code{run\_id}, \code{config\_hash}, and a \code{claim} tag --- full provenance
-for the eventual write-up.
-\item Reference-vs-bulk numerical split: float64 NumPy is the verified path;
-float32 CUDA is the throughput path, agreement-tested.
-\item Per-sample \code{SeedSequence} streams make any sample or intervention
-twin exactly regenerable from two integers.
-\end{itemize}
+Two claims are supported by the evidence above: that the surrogate is accurate enough to stand in
+for the solver, and that the audit separates causal from spurious reliance. A third claim, that this
+PDE describes real materials degradation, is deliberately not made. Establishing it requires
+experimental data, which is the subject of ongoing work.
 
-\textbf{Known technical debt} (ordered by priority):
-\begin{enumerate}
-\item \textbf{Single-seed results.} All headline metrics come from one master
-seed per phase. Cheap to fix now (GPU backends): a 5-seed replication with
-dispersion estimates should precede any publication claim.
-\item \textbf{No CI.} Tests and gates run manually; a minimal pipeline
-(pytest + ruff on push) would protect the reference solvers from silent
-regression.
-\item \textbf{Single-direction ablation.} Diagnostic 5 ablates one latent
-direction; a small-subspace variant (QR of the top S-responding directions) is
-specified in the handoff playbook but not implemented.
-\item \textbf{Surrogate horizon.} The Phase-2 surrogate covers $T{=}1$;
-autoregressive composition to longer horizons is unvalidated.
-\item \textbf{Mitigation is post-hoc only} (latent ablation); training-time
-mitigation was probed only via the inconclusive IRM linear probe.
-\item Minor: audit script length (${\sim}450$ lines), Windows-specific paths,
-${\sim}6$\,GB of duplicated venv/dataset artifacts across the two repos.
-\end{enumerate}
+\subsection{Limitations}
 
-% ============================ 5. NEXT STEPS ===============================
-\section{Next Steps \& Recommendations}
+All headline metrics come from a single master seed per phase; a multi-seed replication with
+dispersion estimates should precede any publication claim. The surrogate covers $T = 1$ only, so
+autoregressive composition to longer horizons remains unvalidated. The mitigation demonstrated here
+is post-hoc, operating on a trained representation; training-time mitigation was probed only through
+the inconclusive IRM linear probe. Finally, the audit has so far been run on a single governing
+equation, so replication on a dynamically distinct system, such as Fisher--KPP, is the most
+important outstanding test of generality.
 
-\begin{enumerate}
-\item \textbf{Phase 6a --- Cross-PDE replication (highest priority).} Repeat
-Phases 4--5 on Fisher--KPP
-($\partial u/\partial t = D\nabla^2 u + r u(1-u)$; traveling fronts, different
-dynamical character). A method that only works on Allen--Cahn is overfit to one
-equation --- this is the reviewer-facing weak point today, and the
-infrastructure was designed for it.
-\item \textbf{Phase 6b --- Robustness sweeps.} Re-run the audit under
-observation noise, sensor sparsity, and resolution changes; confirm the
-verdicts survive realistic measurement conditions.
-\item \textbf{Multi-seed replication.} 5 master seeds across Phase 2--5 headline
-metrics; report means $\pm$ dispersion ($<1$ day of compute at current
-throughput).
-\item \textbf{Mitigation experiment.} Compare naive training against an
-invariance-trained or ablation-regularized model on the Phase-4 sandbox ---
-upgrading the project from \emph{diagnosing} shortcut learning to \emph{fixing}
-it. Given the IRM linear-probe result, prioritize representation-level
-interventions over IRMv1-style penalties.
-\item \textbf{Phase 7 --- Write-up.} Assemble the paper around the three-claims
-framing; every figure and CSV already carries provenance tags. The honest IRM
-negative result and the two documented check re-formalizations belong in the
-paper --- they strengthen, not weaken, the methodology narrative.
-\item \textbf{Housekeeping.} Stand up CI, add linting, and write a short
-results-directory README mapping each CSV to the claim it supports.
-\end{enumerate}
+\section*{Acknowledgements}
 
-\vspace{1.2em}
-{\color{line}\rule{\linewidth}{0.4pt}}\\[0.4em]
-{\sffamily\footnotesize\color{muted}%
-Prepared by the engineering team. Full evidence trail: \code{results/}
-(provenance-tagged CSVs), \code{figures/}, \code{HANDOFF.md} (design record),
-\code{experiments/phase2\_problem\_statement.md} (claims discipline),
-\code{results/phase5\_conclusions.md} (audit verdict).}
+This work was conducted at CEDAR Lab, Thayer School of Engineering, Dartmouth College, advised by
+Bijan Mazaheri.
+
+\begin{thebibliography}{1}
+\bibitem{rosenfeld2021risks}
+E.~Rosenfeld, P.~Ravikumar, and A.~Risteski.
+\newblock The risks of invariant risk minimization.
+\newblock In \emph{International Conference on Learning Representations (ICLR)}, 2021.
+\end{thebibliography}
 
 \end{document}
