@@ -35,7 +35,7 @@ Research conducted at CEDAR Lab, Thayer School of Engineering, Dartmouth College
 | Coarsening | `l^2` grows linearly in `eps^2 t`, `R^2 = 0.979` |
 | Dataset generation | About 100x faster after a float32 CUDA rewrite, roughly 14 h to 25 min (GPU versus CPU solver) |
 | FNO surrogate | 1.52% relative L2 error in distribution, 1.26% on a held-out `epsilon` band |
-| Causal audit | All five diagnostics agreed with the per-sample ground-truth key across 28,000 simulations |
+| Causal audit | All five diagnostics agreed with the per-sample ground-truth key across 8,000 simulations |
 
 Because the two independent solvers agree to within `~9e-4`, essentially all of the surrogate's
 residual error is attributable to the model rather than the solver.
@@ -126,7 +126,7 @@ python -m pytest scripts/tests -q
 
 ```bash
 python scripts/run_phase2_verify_solver.py    # Gate 2a: six physics checks
-python scripts/run_phase2_generate.py         # 4000 samples + validator targets
+python scripts/run_phase2_generate.py         # 6000 samples + validator targets
 python scripts/run_phase2_train_fno.py
 python scripts/run_phase2_eval.py             # Gate 2b: ID / OOD / independent-scheme
 ```
