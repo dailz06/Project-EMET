@@ -1,15 +1,26 @@
-# Pinned from c:\fno_project\.venv (Phase 1) pip freeze, 2026-07-06.
-# torch is installed separately with the cu121 index (see README.md) because
-# the +cu121 builds are not on PyPI.
+# Python dependencies for Project-EMET (Phases 2-5).
+#
+# torch is installed separately with the cu121 index (see README.md); the
+# +cu121 builds are not on PyPI. Pinned from a verified Phase 1 environment
+# (pip freeze, 2026-07-06).
+
+# --- core numerics ---
 numpy==2.4.4
+scipy==1.18.0
 pandas==3.0.3
+
+# --- simulation and operator learning ---
+py-pde==0.57.0
+neuraloperator==2.0.0
+
+# --- causal audit (Phases 3-5) ---
+scikit-learn==1.6.1
+SALib==1.5.1
+
+# --- utilities, plotting, config ---
 matplotlib==3.11.0
 PyYAML==6.0.3
 tqdm==4.68.3
-scipy==1.18.0
-py-pde==0.57.0
-neuraloperator==2.0.0
-# New for Phases 3-5
-scikit-learn==1.6.1
-SALib==1.5.1
+
+# --- testing ---
 pytest==8.3.4
