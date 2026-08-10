@@ -16,7 +16,7 @@ below is checked against that ground truth.
 
 ## Authors
 
-- **Fudail ibn Umar Farooq Khawaja**, Purdue University ([@dailz06](https://github.com/dailz06))
+- **Fuzail Khawaja**, Purdue University ([@dailz06](https://github.com/dailz06))
 - **Muhammad Ahmad**, Dartmouth College ([@StrawberryMilkyCoder](https://github.com/StrawberryMilkyCoder))
 
 Both authors contributed equally.
