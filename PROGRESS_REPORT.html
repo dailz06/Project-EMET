@@ -1,15 +1,17 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
-<body>
-<title>FNO Degradation Project â€” Technical Progress Report</title>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Technical Progress and Findings Report</title>
 <style>
   :root {
     --paper: #f7f9fa;
     --card: #ffffff;
     --ink: #1c2733;
     --muted: #5a6b7a;
-    --faint: #8a99a6;
+    --faint: #7a8996;
     --line: #dde5ea;
     --accent: #0f6b7a;
     --accent-soft: #e3eff1;
@@ -25,12 +27,12 @@
     --mono: "Cascadia Code", Consolas, "SF Mono", Menlo, monospace;
   }
   @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not([data-theme="light"]) {
       --paper: #11181f;
       --card: #18212a;
       --ink: #dce5ec;
-      --muted: #93a4b2;
-      --faint: #6e7f8c;
+      --muted: #9daeba;
+      --faint: #808f9c;
       --line: #2a3742;
       --accent: #55b7c6;
       --accent-soft: #16303a;
@@ -43,15 +45,9 @@
       --code-bg: #1f2a34;
     }
   }
-  :root[data-theme="light"] {
-    --paper: #f7f9fa; --card: #ffffff; --ink: #1c2733; --muted: #5a6b7a;
-    --faint: #8a99a6; --line: #dde5ea; --accent: #0f6b7a; --accent-soft: #e3eff1;
-    --pass-fg: #22633f; --pass-bg: #e2f1e7; --warn-fg: #8a5a12; --warn-bg: #f6ecd9;
-    --fail-fg: #9c3a32; --fail-bg: #f7e5e2; --code-bg: #eef2f4;
-  }
   :root[data-theme="dark"] {
-    --paper: #11181f; --card: #18212a; --ink: #dce5ec; --muted: #93a4b2;
-    --faint: #6e7f8c; --line: #2a3742; --accent: #55b7c6; --accent-soft: #16303a;
+    --paper: #11181f; --card: #18212a; --ink: #dce5ec; --muted: #9daeba;
+    --faint: #808f9c; --line: #2a3742; --accent: #55b7c6; --accent-soft: #16303a;
     --pass-fg: #7fd0a0; --pass-bg: #16311f; --warn-fg: #e0b36a; --warn-bg: #33270f;
     --fail-fg: #e29a91; --fail-bg: #3a1f1b; --code-bg: #1f2a34;
   }
@@ -74,6 +70,29 @@
     padding-bottom: 1.75rem;
     border-bottom: 2px solid var(--ink);
   }
+  .topbar {
+    max-width: 46rem;
+    margin: 1.25rem auto 0;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .theme-toggle {
+    font-family: var(--sans);
+    font-size: 0.7rem;
+    font-weight: 650;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 0.4rem 0.7rem;
+    cursor: pointer;
+    transition: color .15s ease, border-color .15s ease, background-color .15s ease;
+  }
+  .theme-toggle:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+  .theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
   .eyebrow {
     font-family: var(--sans);
     font-size: 0.72rem;
@@ -102,6 +121,13 @@
     margin: 0;
   }
   .meta strong { color: var(--ink); font-weight: 600; }
+  .byline {
+    font-family: var(--sans);
+    font-size: 0.9rem;
+    color: var(--ink);
+    margin: 0 0 0.85rem;
+  }
+  .byline span { color: var(--muted); }
 
   h2 {
     font-family: var(--sans);
@@ -161,6 +187,16 @@
     background: var(--card);
     border: 1px solid var(--line);
   }
+  caption {
+    font-family: var(--sans);
+    font-size: 0.75rem;
+    font-weight: 650;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--faint);
+    text-align: left;
+    padding: 0 0 0.5rem;
+  }
   th {
     text-align: left;
     font-size: 0.72rem;
@@ -189,16 +225,6 @@
     margin: 1.6rem 0;
   }
   .phase h3 { margin-top: 0; display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: baseline; }
-  .phase .plabel {
-    font-family: var(--sans);
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--accent);
-    display: block;
-    margin-bottom: 0.35rem;
-  }
   .abc {
     font-family: var(--sans);
     font-size: 0.72rem;
@@ -239,174 +265,233 @@
   }
   strong { font-weight: 640; }
   a { color: var(--accent); }
+
+  @media print {
+    .topbar { display: none; }
+    body { padding-bottom: 0; }
+    .phase, table { break-inside: avoid; }
+  }
 </style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="theme-toggle" type="button" id="themeToggle" aria-label="Toggle dark mode">
+    <span class="tb-dark">Dark mode</span><span class="tb-light" hidden>Light mode</span>
+  </button>
+</div>
 
 <header class="masthead">
-  <p class="eyebrow">Technical Progress &amp; Findings Report</p>
-  <h1>Modeling Material Degradation with Fourier Neural Operators &amp; Auditing Feature Causality</h1>
+  <p class="eyebrow">Technical Progress and Findings Report</p>
+  <h1>Modeling Material Degradation with Fourier Neural Operators and Auditing Feature Causality</h1>
+  <p class="byline">
+    Fudail ibn Umar Farooq Khawaja <span>(Purdue University)</span>
+    and Muhammad Ahmad <span>(Thayer School of Engineering, Dartmouth College)</span>.
+    <span>Both authors contributed equally.</span>
+  </p>
   <p class="meta">
-    <span><strong>Status</strong> Phases 0â€“5 complete, all gates passed</span>
+    <span><strong>Status</strong> Phases 0&ndash;5 complete, all gates passed</span>
     <span><strong>Date</strong> 2026-07-12</span>
-    <span><strong>Audience</strong> Technical stakeholders &amp; engineering</span>
-    <span><strong>Repos</strong> <code>fno_project</code> (P0â€“1) Â· <code>FNO_Project Phase 2</code> (P2â€“5)</span>
+    <span><strong>Scope</strong> Phases 0&ndash;1 in a separate frozen repository; this repository covers Phases 2&ndash;5</span>
   </p>
 </header>
 
 <div class="sheet">
   <h2><span class="no">1</span>Executive Summary</h2>
-  <p class="lede">This project set out to answer a deceptively simple question in a setting where the answer can actually be checked: <em>when a neural network learns physics, does it rely on the causal drivers of the system, or on spurious correlates?</em> It is the "wolf&nbsp;vs.&nbsp;snow" shortcut-learning problem transplanted into computational physics â€” where synthetic data provides what photographs never can: a ground-truth answer key, because we decide which factors enter the governing equations.</p>
+  <p class="lede">This project set out to answer a deceptively simple question in a setting where the answer can actually be checked: <em>when a neural network learns physics, does it rely on the causal drivers of the system, or on spurious correlates?</em> It is the "wolf&nbsp;vs.&nbsp;snow" shortcut-learning problem transplanted into computational physics, where synthetic data provides what photographs never can: a ground-truth answer key, because we decide which factors enter the governing equations.</p>
   <p><strong>The project's full synthetic arc is complete.</strong> All five build phases passed their pre-registered exit gates:</p>
 </div>
 
 <div class="wide tablewrap">
   <table>
-    <thead><tr><th>Milestone</th><th>Result</th></tr></thead>
+    <caption>Milestone summary</caption>
+    <thead><tr><th scope="col">Milestone</th><th scope="col">Result</th></tr></thead>
     <tbody>
-      <tr><td>Verified Allenâ€“Cahn phase-field solver</td><td><span class="chip pass">6/6 checks</span> energy decay, curvature law within 0.8% of theory, coarsening scaling, convergence, cross-scheme agreement</td></tr>
+      <tr><td>Verified Allen&ndash;Cahn phase-field solver</td><td><span class="chip pass">6/6 checks</span> energy decay, curvature law within 0.8% of theory, coarsening scaling, convergence, cross-scheme agreement</td></tr>
       <tr><td>FNO surrogate accuracy (claim 1)</td><td><span class="num">1.52%</span> relative L2 in-distribution; <strong><span class="num">1.53%</span> against an independent numerical scheme</strong>; <span class="num">1.26%</span> on a held-out parameter band</td></tr>
       <tr><td>Spurious-correlation sandbox (Phase 4)</td><td>Shortcut adoption proven: biased model beats matched control <span class="num">0.038</span> vs <span class="num">0.083</span> severity MAE on identical held-out data</td></tr>
       <tr><td>Causal audit (claim 2)</td><td><span class="chip pass">21/21 checks</span> across five independent diagnostics, all agreeing with the constructed answer key</td></tr>
       <tr><td>Headline single number</td><td>Sobol sensitivity of the nuisance factor: <strong><span class="num">0.0000</span> in the physics, <span class="num">0.883</span> in the model</strong></td></tr>
-      <tr><td>Throughput</td><td>~100Ã— solver speedup via CUDA backends â€” dataset generation from ~14&nbsp;h to ~25&nbsp;min</td></tr>
+      <tr><td>Throughput</td><td>~100&times; solver speedup via CUDA backends, cutting dataset generation from ~14&nbsp;h to ~25&nbsp;min</td></tr>
     </tbody>
   </table>
 </div>
 
 <div class="sheet">
-  <p>The claims discipline held throughout: <strong>claim 1</strong> (surrogate accuracy) and <strong>claim 2</strong> (the audit separates causal from spurious features) are supported by per-result-tagged evidence; <strong>claim 3</strong> (the PDE describes <em>real</em> degradation) is explicitly not made â€” it awaits real experimental data.</p>
-  <p>Beyond detection, the audit demonstrated <strong>mitigation</strong>: surgically removing the identified nuisance direction from the learned representation restored predictive validity on adversarial data (probe RÂ² from <span class="num">âˆ’1.03</span> to <span class="num">+0.47</span>) while leaving the physical content 96% intact.</p>
+  <p>The claims discipline held throughout: <strong>claim 1</strong> (surrogate accuracy) and <strong>claim 2</strong> (the audit separates causal from spurious features) are supported by per-result-tagged evidence; <strong>claim 3</strong> (the PDE describes <em>real</em> degradation) is explicitly not made, and awaits real experimental data.</p>
+  <p>Beyond detection, the audit demonstrated <strong>mitigation</strong>: surgically removing the identified nuisance direction from the learned representation restored predictive validity on adversarial data (probe R&sup2; from <span class="num">&minus;1.03</span> to <span class="num">+0.47</span>) while leaving the physical content 96% intact.</p>
 
   <h2><span class="no">2</span>Phase-by-Phase Breakdown</h2>
 
   <div class="phase">
-    <h3><span>Phases 0â€“1 Â· Environment, Problem Statement &amp; Diffusion Warm-up</span> <span class="chip pass">Complete</span></h3>
+    <h3><span>Phases 0&ndash;1 &middot; Environment, Problem Statement, and Diffusion Warm-up</span> <span class="chip pass">Complete</span></h3>
     <span class="abc">(a) Objectives</span>
     <p>Reproducible environment; a written problem statement separating the three claims; de-risk the ML pipeline on the easiest target (2D heterogeneous diffusion) before the physics gets interesting.</p>
     <span class="abc">(b) Deliverables</span>
-    <p>Single-script pipeline: py-pde diffusion solver, Gaussian-random-field (GRF) input sampling, 3,000-sample dataset with a held-out correlation-length band, trained FNO, evaluation suite, problem-statement document.</p>
-    <span class="abc">(c) Findings &amp; decisions</span>
-    <p>GRFs adopted as the principled input distribution (controllable correlation length and spectral decay â†’ clean OOD holdouts). The FNO recipe (16 modes, 64 hidden channels, 2.4M params) reached <span class="num">1.23%</span> ID / <span class="num">1.20%</span> OOD relative L2 â€” establishing the architecture reused in every later phase.</p>
+    <p>Single-script pipeline: py-pde diffusion solver, Gaussian-random-field (GRF) input sampling, 3,000-sample dataset with a held-out correlation-length band, trained FNO, evaluation suite, problem-statement document. These artifacts live in the frozen Phases 0&ndash;1 repository and are not included here.</p>
+    <span class="abc">(c) Findings and decisions</span>
+    <p>GRFs adopted as the principled input distribution (controllable correlation length and spectral decay, giving clean OOD holdouts). The FNO recipe (16 modes, 64 hidden channels, 2.4M params) reached <span class="num">1.23%</span> ID and <span class="num">1.20%</span> OOD relative L2, establishing the architecture reused in every later phase.</p>
   </div>
 
   <div class="phase">
-    <h3><span>Phase 2 Â· Allenâ€“Cahn Simulator &amp; FNO Surrogate</span> <span class="chip pass">Gates 2a + 2b</span></h3>
+    <h3><span>Phase 2 &middot; Allen&ndash;Cahn Simulator and FNO Surrogate</span> <span class="chip pass">Gates 2a + 2b</span></h3>
     <span class="abc">(a) Objectives</span>
-    <p>A <em>trustworthy</em> degradation simulator (<code>âˆ‚u/âˆ‚t = M(x)Â·(ÎµÂ²âˆ‡Â²u + u âˆ’ uÂ³ + g)</code>), a surrogate accurate enough to stand in for it, and a generatorâ‰ validator independence check.</p>
+    <p>A <em>trustworthy</em> degradation simulator (<code>&part;u/&part;t = M(x)&middot;(&epsilon;&sup2;&nabla;&sup2;u + u &minus; u&sup3; + g)</code>), a surrogate accurate enough to stand in for it, and a generator&ne;validator independence check.</p>
     <span class="abc">(b) Deliverables</span>
-    <p>The modular <code>fnocausal</code> package: config + provenance hashing, per-sample rng streams, primary SBDF2 pseudo-spectral solver, explicit-RK4 validator solver, py-pde cross-check, Nyquist-correct Fourier resampling, physics metrics, shared training loop, 6-check verification suite, a 6,000-sample dataset plus a full validator test set re-solved with the independent scheme at 128Â², dt/4, and 16 unit tests.</p>
-    <span class="abc">(c) Findings &amp; decisions</span>
+    <p>The modular <code>fnocausal</code> package: config and provenance hashing, per-sample rng streams, primary SBDF2 pseudo-spectral solver, explicit-RK4 validator solver, py-pde cross-check, Nyquist-correct Fourier resampling, physics metrics, shared training loop, 6-check verification suite, a 6,000-sample dataset (64&times;64, T=1) plus a full validator test set re-solved with the independent scheme at 128&sup2;, dt/4, and 16 unit tests.</p>
+    <span class="abc">(c) Findings and decisions</span>
     <ul>
-      <li><strong>Scheme choice was measured, not assumed:</strong> first-order semi-implicit stepping missed the cross-scheme tolerance (<span class="num">1.8Ã—10â»Â³</span>), so the solver was upgraded to second-order SBDF2 (<span class="num">7Ã—10â»âµ</span> at dt=2.5Ã—10â»Â³).</li>
-      <li><strong>Solver verification is load-bearing:</strong> energy monotonicity, the shrinking-circle law d(RÂ²)/dt&nbsp;=&nbsp;âˆ’2ÎµÂ² (0.8% deviation), coarsening scaling, dt/grid convergence, and three-way scheme agreement all passed before any training data was generated.</li>
-      <li><strong>Gate 2b:</strong> ID test <span class="num">1.52%</span>; independent-scheme targets <span class="num">1.53%</span> (schemes agree to ~9Ã—10â»â´, so the surrogate error budget is entirely model, not solver); held-out Îµ-band <span class="num">1.26%</span>.</li>
+      <li><strong>Scheme choice was measured, not assumed.</strong> First-order semi-implicit stepping missed the cross-scheme tolerance (<span class="num">1.8&times;10<sup>&minus;3</sup></span>), so the solver was upgraded to second-order SBDF2 (<span class="num">7&times;10<sup>&minus;5</sup></span> at dt=2.5&times;10<sup>&minus;3</sup>).</li>
+      <li><strong>Solver verification is load-bearing.</strong> Energy monotonicity, the shrinking-circle law d(R&sup2;)/dt&nbsp;=&nbsp;&minus;2&epsilon;&sup2; (0.8% deviation), coarsening scaling, dt and grid convergence, and three-way scheme agreement all passed before any training data was generated.</li>
+      <li><strong>Gate 2b.</strong> ID test <span class="num">1.52%</span>; independent-scheme targets <span class="num">1.53%</span> (the schemes agree to ~9&times;10<sup>&minus;4</sup>, so the surrogate error budget is entirely model, not solver); held-out &epsilon;-band <span class="num">1.26%</span>.</li>
     </ul>
   </div>
 
   <div class="phase">
-    <h3><span>Phase 3 Â· Autoencoder Featurization</span> <span class="chip pass">Gate 3 (revised)</span></h3>
+    <h3><span>Phase 3 &middot; Autoencoder Featurization</span> <span class="chip pass">Gate 3 (revised)</span></h3>
     <span class="abc">(a) Objectives</span>
-    <p>A compact latent representation <code>z</code> of the material state as the <em>analysis substrate</em> for the causal audit. The FNO always operates on full fields â€” the AE is instrumentation, not pipeline.</p>
+    <p>A compact latent representation <code>z</code> of the material state as the <em>analysis substrate</em> for the causal audit. The FNO always operates on full fields, so the AE is instrumentation rather than pipeline.</p>
     <span class="abc">(b) Deliverables</span>
-    <p>Convolutional autoencoder; a 10-model sweep (2 field variants Ã— z âˆˆ {8â€¦128}); pixel-reconstruction and functional-fidelity reports with figures.</p>
-    <span class="abc">(c) Findings &amp; decisions</span>
-    <p>The planned pixel-L2 gate (â‰¤5%) is <strong>informationally impossible</strong> for saturated two-phase fields: error is dominated by interface placement (rel-L2 â‰ˆ âˆš(4Î´L)), so 5% would demand ~0.01-cell interface accuracy from any latent. The gate was re-anchored on what the audit requires â€” preservation of physical observables. At z=128: severity RÂ² <span class="num">0.975</span>, interface-length RÂ² <span class="num">0.932</span>. The pixel curve remains on the record.</p>
+    <p>Convolutional autoencoder; a 10-model sweep (2 field variants &times; z &isin; {8&hellip;128}); pixel-reconstruction and functional-fidelity reports with figures.</p>
+    <span class="abc">(c) Findings and decisions</span>
+    <p>The planned pixel-L2 gate (&le;5%) is <strong>informationally impossible</strong> for saturated two-phase fields: error is dominated by interface placement (rel-L2 &asymp; &radic;(4&delta;L)), so 5% would demand ~0.01-cell interface accuracy from any latent. The gate was re-anchored on what the audit requires, preservation of physical observables. At z=128: severity R&sup2; <span class="num">0.975</span>, interface-length R&sup2; <span class="num">0.932</span>, pixel <span class="num">12%</span>. The pixel curve remains on the record.</p>
   </div>
 
   <div class="phase">
-    <h3><span>Phase 4 Â· Spurious-Structure Injection â€” the Answer Key</span> <span class="chip pass">Gates 4(i)â€“(iv)</span></h3>
+    <h3><span>Phase 4 &middot; Spurious-Structure Injection, the Answer Key</span> <span class="chip pass">Gates 4(i)&ndash;(iv)</span></h3>
     <span class="abc">(a) Objectives</span>
     <p>A dataset where a nuisance factor S is <em>provably</em> non-causal and a driver C is <em>provably</em> causal, with training environments where S correlates with the outcome and evaluation environments where the correlation weakens, breaks, or reverses.</p>
     <span class="abc">(b) Deliverables</span>
-    <p>8,000-simulation pool (nucleation-growth regime, hidden mobility M(x)=mÂ·GRF); seven environments (train Ï âˆˆ {0.95, 0.8}, control Ï=0, eval Ï âˆˆ {0.95, 0.5, 0, âˆ’0.95}); a per-sample answer-key CSV; five trained models â€” biased, control, and oracle FNOs, two severity heads, and the biased-environment AE audited in Phase&nbsp;5.</p>
-    <span class="abc">(c) Findings &amp; decisions</span>
+    <p>An 8,000-simulation pool (nucleation-growth regime, tilted well g=0.3, hidden mobility M(x)=m&middot;GRF); seven environments (train &rho; &isin; {0.95, 0.8}, control &rho;=0, eval &rho; &isin; {0.95, 0.5, 0, &minus;0.95}); a per-sample answer-key CSV; five trained models, namely biased, control, and oracle FNOs plus two severity heads, together with the biased-environment AE audited in Phase&nbsp;5.</p>
+    <span class="abc">(c) Findings and decisions</span>
     <ul>
-      <li><strong>The load-bearing insight: hide the causal driver.</strong> If a model sees all causal inputs, the target is deterministic in them and a competent network ignores any nuisance â€” no shortcut, no experiment. With M(x) hidden, the nuisance genuinely carries information in biased environments, so the Bayes-optimal predictor <em>must</em> use it â€” guaranteeing adoption and guaranteeing collapse under reversal. Exactly the wolf/snow structure.</li>
-      <li><strong>Monotonicity by construction, not luck:</strong> traveling-wave analysis gives critical radius R_c = Îµâˆš2/(3g), <em>independent of m</em>; seeding all nuclei above R_c makes severity monotone in the hidden amplitude for every sample (confirmed 20/20 in matched interventions; severity spread 0.04â€“0.88, zero saturation).</li>
-      <li><strong>Adoption confirmed:</strong> biased beats control on held-out same-distribution data (FNO <span class="num">0.250</span> vs <span class="num">0.351</span> rel-L2; head <span class="num">0.038</span> vs <span class="num">0.083</span> MAE) while the oracle sits at <span class="num">0.0077</span> â€” the full designed ordering.</li>
+      <li><strong>The load-bearing insight: hide the causal driver.</strong> If a model sees all causal inputs, the target is deterministic in them and a competent network ignores any nuisance, leaving no shortcut and no experiment. With M(x) hidden, the nuisance genuinely carries information in biased environments, so the Bayes-optimal predictor <em>must</em> use it, which guarantees both adoption and collapse under reversal. Exactly the wolf/snow structure.</li>
+      <li><strong>Monotonicity by construction, not luck.</strong> Traveling-wave analysis gives front velocity V = M&middot;&epsilon;&middot;3g/&radic;2 and critical radius R_c = &epsilon;&radic;2/(3g), both <em>independent of m</em>. With g=0.3 and &epsilon;=0.03 this puts R_c &asymp; 0.047, so seeding all nuclei in [0.07,&nbsp;0.13] makes severity monotone in the hidden amplitude for every sample (confirmed 20/20 in matched interventions; severity spread 0.04&ndash;0.88, zero saturation). The tilt also stays below the spinodal g* = 2/(3&radic;3) &asymp; 0.385, above which the &minus;1 phase would destabilize.</li>
+      <li><strong>Adoption confirmed.</strong> Biased beats control on held-out same-distribution data (FNO <span class="num">0.250</span> vs <span class="num">0.351</span> rel-L2; head <span class="num">0.038</span> vs <span class="num">0.083</span> MAE) while the oracle sits at <span class="num">0.0077</span>, reproducing the full designed ordering.</li>
     </ul>
   </div>
 
   <div class="phase">
-    <h3><span>Phase 5 Â· The Causal Audit</span> <span class="chip pass">Gate 5 â€” 21/21</span></h3>
+    <h3><span>Phase 5 &middot; The Causal Audit</span> <span class="chip pass">Gate 5, 21/21</span></h3>
     <span class="abc">(a) Objectives</span>
-    <p>Quantitatively separate causal from spurious reliance with multiple corroborating methods, checking every verdict against the Phase-4 answer key.</p>
+    <p>Quantitatively separate causal from spurious reliance with multiple corroborating methods, checking every verdict against the Phase 4 answer key.</p>
     <span class="abc">(b) Deliverables</span>
-    <p>An audit orchestrator over five analysis modules; a scorecard CSV (every check: expected pattern â†’ measured value â†’ verdict); an auto-generated conclusions document; five figures.</p>
+    <p>An audit orchestrator over five analysis modules; a scorecard CSV recording, for every check, the expected pattern, the measured value, and the verdict; an auto-generated conclusions document; five figures.</p>
     <span class="abc">(c) Findings</span>
+    <p>All five diagnostics agree with the answer key across 21 gate-counted checks, as summarised below.</p>
   </div>
 </div>
 
 <div class="wide tablewrap">
   <table>
-    <thead><tr><th>Diagnostic</th><th>Key result</th></tr></thead>
+    <caption>Audit scorecard</caption>
+    <thead><tr><th scope="col">Diagnostic</th><th scope="col">Key result</th></tr></thead>
     <tbody>
-      <tr><td>Shortcut collapse</td><td>Biased head error <strong>+327%</strong> under flipped correlation (<span class="num">0.038 â†’ 0.161</span>, monotone in Ï-shift); control âˆ’4%; oracle flat at <span class="num">0.0073</span></td></tr>
-      <tr><td>Intervention probing</td><td>Latent responds to nuisance interventions with RÂ² <span class="num">0.976</span>, to causal interventions with RÂ² <span class="num">0.495</span>; directions at 80.4Â°</td></tr>
-      <tr><td>Invariance (ICP-style)</td><td>Causal-score coefficient stable across environments (rel. range <span class="num">0.145</span>); nuisance-score coefficient tracks Ï (~222Ã— swing, sign-flips on flipped data)</td></tr>
+      <tr><td>Shortcut collapse</td><td>Biased head error <strong>+327%</strong> under flipped correlation (<span class="num">0.038</span> to <span class="num">0.161</span>, monotone in the &rho;-shift); control <span class="num">&minus;4%</span>; oracle flat at <span class="num">0.0073</span></td></tr>
+      <tr><td>Intervention probing</td><td>Latent responds to nuisance interventions with R&sup2; <span class="num">0.976</span>, to causal interventions with R&sup2; <span class="num">0.495</span>; directions at 80.4&deg;</td></tr>
+      <tr><td>Invariance (ICP-style)</td><td>Causal-score coefficient stable across environments (relative range <span class="num">0.145</span>); nuisance-score coefficient tracks &rho; (~222&times; swing, sign-flipping on flipped data)</td></tr>
       <tr><td>Sobol sensitivity</td><td>Nuisance total index: <strong><span class="num">0.0000</span> (simulator) vs <span class="num">0.883</span> (model)</strong>; hidden driver: <span class="num">0.644</span> vs <span class="num">0.0000</span></td></tr>
-      <tr><td>Latent ablation</td><td>Removing the S-direction: eval-ID probe RÂ² <span class="num">0.868 â†’ 0.292</span>, flipped RÂ² <strong><span class="num">âˆ’1.028 â†’ +0.470</span></strong>; decoded physics channel changes only 4.3%</td></tr>
+      <tr><td>Latent ablation</td><td>Removing the S-direction: eval-ID probe R&sup2; <span class="num">0.868</span> to <span class="num">0.292</span>, flipped R&sup2; <strong><span class="num">&minus;1.028</span> to <span class="num">+0.470</span></strong>; decoded physics channel changes only 4.3%</td></tr>
     </tbody>
   </table>
 </div>
 
 <div class="sheet">
-  <p>One secondary check produced an honest <strong>negative result</strong> <span class="chip info">informational</span>: an IRMv1-penalized probe generalized <em>worse</em> than pooled ERM at every penalty weight (<span class="num">0.289</span> vs <span class="num">0.425</span> flipped-environment RÂ², Î» selected on an independent environment). Recorded with its likely explanation: the pooled baseline is already implicitly invariance-regularized (half its data comes from the Ï=0 environment), and linear IRMv1 is documented to underperform in low-environment-diversity settings (Rosenfeld et&nbsp;al., 2021).</p>
+  <p>One secondary check produced an honest <strong>negative result</strong> <span class="chip info">informational</span>: an IRMv1-penalized probe generalized <em>worse</em> than pooled ERM at every penalty weight (<span class="num">0.289</span> vs <span class="num">0.425</span> flipped-environment R&sup2;, with &lambda; selected on an independent environment). It is recorded with its likely explanation: the pooled baseline is already implicitly invariance-regularized, since half its data comes from the &rho;=0 environment, and linear IRMv1 is documented to underperform in low-environment-diversity settings (Rosenfeld et&nbsp;al., 2021).</p>
 
-  <h2><span class="no">3</span>Technical Challenges &amp; Explanation Report</h2>
+  <h2><span class="no">3</span>Technical Challenges and Explanation Report</h2>
 
   <div class="challenge">
     <h3><span class="tag">C1</span>Long-horizon operator learning is chaotic</h3>
-    <p>The first surrogate, trained on a T=4 horizon, memorized the training set (train MSE 5.5Ã—10â»â´) yet generalized at 17% â€” best validation at epoch 6 of 100. A T=4 one-shot map spans an entire coarsening cascade whose merger outcomes depend sensitively on the input. <strong>Resolution:</strong> horizon shortened to T=1 where the operator is well-conditioned; longer horizons via autoregressive composition are future work. Documented as a config-level decision.</p>
+    <p>The first surrogate, trained on a T=4 horizon, memorized the training set (train MSE 5.5&times;10<sup>&minus;4</sup>) yet generalized at 17%, with best validation at epoch 6 of 100. A T=4 one-shot map spans an entire coarsening cascade whose merger outcomes depend sensitively on the input. <strong>Resolution:</strong> horizon shortened to T=1 where the operator is well-conditioned; longer horizons via autoregressive composition are future work. Documented as a config-level decision.</p>
   </div>
   <div class="challenge">
     <h3><span class="tag">C2</span>A hidden-parameter bug that later became the experiment</h3>
-    <p>Even at T=1, 11% error with instant overfitting. Root cause: the PDE parameter Îµ was not a model input and is not inferable from the other channels â€” the target literally wasn't a function of the inputs. <strong>Resolution:</strong> Îµ fed as a constant channel (standard parametric-FNO practice) â†’ error collapsed 60Ã— to 1.5%. Instructive symmetry: the same hidden-variable structure that was a <em>bug</em> in Phase 2 is deliberately <em>constructed</em> in Phase 4, where its training signature reappears by design.</p>
+    <p>Even at T=1, 11% error with instant overfitting. Root cause: the PDE parameter &epsilon; was not a model input and is not inferable from the other channels, so the target literally was not a function of the inputs. <strong>Resolution:</strong> &epsilon; fed as a constant channel (standard parametric-FNO practice), collapsing the error 60&times; to 1.5%. Instructive symmetry: the same hidden-variable structure that was a <em>bug</em> in Phase 2 is deliberately <em>constructed</em> in Phase 4, where its training signature reappears by design.</p>
   </div>
   <div class="challenge">
     <h3><span class="tag">C3</span>Physics checks mis-specified for a finite box</h3>
-    <p>The textbook coarsening exponent (â„“ ~ t<sup>Â½</sup>) is unmeasurable in a unit box â€” no scaling decade exists, and the structure-factor length is biased by the Porod tail. <strong>Resolution:</strong> the check was restated in the reachable regime as the differential form of the same law (â„“Â² linear in ÎµÂ²t; measured RÂ² 0.98, slope â‰ˆ 9ÎµÂ²) with an interface-density length measure.</p>
+    <p>The textbook coarsening exponent (&#8467; ~ t<sup>1/2</sup>) is unmeasurable in a unit box, since no scaling decade exists and the structure-factor length is biased by the Porod tail. <strong>Resolution:</strong> the check was restated in the reachable regime as the differential form of the same law (&#8467;&sup2; linear in &epsilon;&sup2;t; measured R&sup2; 0.98, slope &asymp; 9&epsilon;&sup2;) with an interface-density length measure.</p>
   </div>
   <div class="challenge">
     <h3><span class="tag">C4</span>Nyquist handling in spectral resampling</h3>
-    <p>Naive Fourier truncation/zero-padding broke the exact resample round trip (2.6% error) by mishandling the ambiguous Nyquist bin. <strong>Resolution:</strong> Nyquist-splitting resampling matrices â€” round trip now exact, validator targets alias-free.</p>
+    <p>Naive Fourier truncation and zero-padding broke the exact resample round trip (2.6% error) by mishandling the ambiguous Nyquist bin. <strong>Resolution:</strong> Nyquist-splitting resampling matrices, after which the round trip is exact and validator targets are alias-free.</p>
   </div>
   <div class="challenge">
     <h3><span class="tag">C5</span>The compute wall</h3>
-    <p>Single-threaded NumPy solves projected ~14&nbsp;h for one dataset + validator set. <strong>Resolution:</strong> float32 CUDA backends for both solvers (~100Ã—; 25 min total), with the float64 NumPy path retained as the verified reference and cross-backend agreement unit-tested (&lt;10â»â´). This also made the audit's 1,280 extra Sobol simulations cheap.</p>
+    <p>Single-threaded NumPy solves projected ~14&nbsp;h for one dataset plus its validator set. <strong>Resolution:</strong> float32 CUDA backends for both solvers (~100&times;, 25 min total), with the float64 NumPy path retained as the verified reference and cross-backend agreement unit-tested (&lt;10<sup>&minus;4</sup>). This also made the audit's 1,280 extra Sobol simulations cheap.</p>
   </div>
   <div class="challenge">
     <h3><span class="tag">C6</span>Ecosystem breakage</h3>
-    <p>SALib 1.5.1 passes problem names into <code>pd.unique</code>, which pandas 3.0 no longer accepts for plain lists. <strong>Resolution:</strong> one-line fix (names as ndarray), noted for future SALib use.</p>
+    <p>SALib 1.5.1 passes problem names into <code>pd.unique</code>, which pandas 3.0 no longer accepts for plain lists. <strong>Resolution:</strong> a one-line fix (names as ndarray), noted for future SALib use.</p>
   </div>
   <div class="challenge">
     <h3><span class="tag">C7</span>Two audit checks were initially mis-formalized</h3>
-    <p>(i) Requiring the <em>multivariate</em> probe's causal coefficient to be stable across environments is not what ICP predicts â€” with a shortcut available, a full-representation fit legitimately shifts weight from causal to spurious directions; that reweighting is itself evidence of adoption. Replaced with ICP-correct univariate score probes, which pass cleanly. (ii) The IRM check tested a coefficient ratio rather than IRM's operative promise (out-of-environment risk); re-formalized with Î» selected on an independent environment â€” still negative, hence the documented informational finding. Both re-formalizations are explained inline in the audit code; <strong>thresholds were never adjusted to fit results</strong>.</p>
+    <p>(i) Requiring the <em>multivariate</em> probe's causal coefficient to be stable across environments is not what ICP predicts: with a shortcut available, a full-representation fit legitimately shifts weight from causal to spurious directions, and that reweighting is itself evidence of adoption. Replaced with ICP-correct univariate score probes, which pass cleanly. (ii) The IRM check tested a coefficient ratio rather than IRM's operative promise, out-of-environment risk; it was re-formalized with &lambda; selected on an independent environment and remained negative, hence the documented informational finding. Both re-formalizations are explained inline in the audit code, and <strong>thresholds were never adjusted to fit results</strong>.</p>
   </div>
 
-  <h2><span class="no">4</span>Current Project Velocity &amp; Technical Debt</h2>
-  <p><strong>Velocity.</strong> Phases 2â€“5 â€” solvers, a ~30-module package, 11 trained models, and the five-diagnostic audit â€” were delivered in three working sessions, with all computation fitting a single consumer GPU (RTX 2070). The exit-gate discipline caught every significant defect <em>before</em> it could contaminate downstream phases.</p>
+  <h2><span class="no">4</span>Project Velocity and Known Limitations</h2>
+  <p><strong>Velocity.</strong> Phases 2&ndash;5, comprising the solvers, a roughly 30-module package, the full model suite, and the five-diagnostic audit, were delivered in three working sessions, with all computation fitting a single consumer GPU (RTX 2070). The exit-gate discipline caught every significant defect <em>before</em> it could contaminate downstream phases.</p>
   <p><strong>Quality posture.</strong> 16 unit tests, all green. Every run is config-driven and seeded; every results CSV carries <code>run_id</code>, <code>config_hash</code>, and a <code>claim</code> tag. Numerical work is split into a verified float64 reference path and an agreement-tested float32 CUDA bulk path. Per-sample <code>SeedSequence</code> streams make any sample or intervention twin exactly regenerable from two integers.</p>
-  <p><strong>Known technical debt</strong> (priority order):</p>
+  <p><strong>Known limitations</strong>, in priority order:</p>
   <ul class="debt">
     <li><strong>Single-seed results.</strong> All headline metrics come from one master seed per phase. Cheap to fix now: a 5-seed replication with dispersion estimates should precede publication claims.</li>
-    <li><strong>No CI.</strong> Tests and gates run manually; a minimal pipeline (pytest + linting on push) would protect the reference solvers from silent regression.</li>
-    <li><strong>Single-direction ablation.</strong> A small-subspace variant is specified in the handoff playbook but unimplemented â€” worth adding even though the single-direction result passed decisively.</li>
-    <li><strong>Surrogate horizon.</strong> The Phase-2 surrogate covers T=1; autoregressive composition to longer horizons is unvalidated.</li>
-    <li><strong>Mitigation is post-hoc only</strong> (latent ablation); training-time mitigation was probed only via the inconclusive IRM linear probe.</li>
-    <li>Minor: audit script length (~450 lines), Windows-specific paths, ~6&nbsp;GB duplicated venv/dataset artifacts across the two repos.</li>
+    <li><strong>No continuous integration.</strong> Tests and gates run manually; a minimal pipeline (pytest plus linting on push) would protect the reference solvers from silent regression.</li>
+    <li><strong>Single-direction ablation.</strong> A small-subspace variant is specified but unimplemented, and is worth adding even though the single-direction result passed decisively.</li>
+    <li><strong>Surrogate horizon.</strong> The Phase 2 surrogate covers T=1; autoregressive composition to longer horizons is unvalidated.</li>
+    <li><strong>Mitigation is post-hoc only</strong> via latent ablation; training-time mitigation was probed only through the inconclusive IRM linear probe.</li>
+    <li><strong>Portability and structure.</strong> Some paths assume Windows, and the audit script is long (~450 lines) and could be split per-diagnostic.</li>
   </ul>
 
-  <h2><span class="no">5</span>Next Steps &amp; Recommendations</h2>
+  <h2><span class="no">5</span>Next Steps and Recommendations</h2>
   <ol class="next">
-    <li><strong>Phase 6a â€” Cross-PDE replication (highest priority).</strong> Repeat Phases 4â€“5 on Fisherâ€“KPP (<code>âˆ‚u/âˆ‚t = Dâˆ‡Â²u + ru(1âˆ’u)</code>; traveling fronts, different dynamical character). A method that only works on Allenâ€“Cahn is overfit to one equation â€” this is the reviewer-facing weak point today, and the infrastructure was designed for it.</li>
-    <li><strong>Phase 6b â€” Robustness sweeps.</strong> Re-run the audit under observation noise, sensor sparsity, and resolution changes; confirm the verdicts survive realistic measurement conditions.</li>
-    <li><strong>Multi-seed replication.</strong> 5 master seeds across headline metrics, reported with dispersion (&lt; 1 day of compute at current throughput).</li>
-    <li><strong>Mitigation experiment.</strong> Compare naive training against an invariance-trained or ablation-regularized model â€” upgrading the project from <em>diagnosing</em> shortcut learning to <em>fixing</em> it. Given the IRM probe result, prioritize representation-level interventions over IRMv1-style penalties.</li>
-    <li><strong>Phase 7 â€” Write-up.</strong> Assemble the paper around the three-claims framing; figures and CSVs already carry provenance tags. The honest IRM negative result and the documented check re-formalizations belong in the paper â€” they strengthen the methodology narrative.</li>
+    <li><strong>Phase 6a, cross-PDE replication (highest priority).</strong> Repeat Phases 4&ndash;5 on Fisher&ndash;KPP (<code>&part;u/&part;t = D&nabla;&sup2;u + ru(1&minus;u)</code>; traveling fronts, different dynamical character). A method that only works on Allen&ndash;Cahn is overfit to one equation, which is the clearest outstanding weakness, and the infrastructure was designed for this.</li>
+    <li><strong>Phase 6b, robustness sweeps.</strong> Re-run the audit under observation noise, sensor sparsity, and resolution changes; confirm the verdicts survive realistic measurement conditions.</li>
+    <li><strong>Multi-seed replication.</strong> Five master seeds across the headline metrics, reported with dispersion (under a day of compute at current throughput).</li>
+    <li><strong>Mitigation experiment.</strong> Compare naive training against an invariance-trained or ablation-regularized model, upgrading the project from <em>diagnosing</em> shortcut learning to <em>fixing</em> it. Given the IRM probe result, prioritize representation-level interventions over IRMv1-style penalties.</li>
+    <li><strong>Phase 7, write-up.</strong> Assemble the paper around the three-claims framing; figures and CSVs already carry provenance tags. The negative IRM result and the documented check re-formalizations belong in the paper, since they strengthen the methodology narrative.</li>
     <li><strong>Housekeeping.</strong> Stand up CI, add linting, and write a results-directory README mapping each CSV to the claim it supports.</li>
   </ol>
 
-  <p class="kicker">Prepared by the engineering team. Full evidence trail: <code>results/</code> (provenance-tagged CSVs), <code>figures/</code>, <code>HANDOFF.md</code> (design record), <code>experiments/phase2_problem_statement.md</code> (claims discipline), <code>results/phase5_conclusions.md</code> (audit verdict). A markdown copy of this report lives at <code>PROGRESS_REPORT.md</code> in the project root.</p>
+  <p class="kicker">Evidence trail: <code>results/</code> (provenance-tagged CSVs), <code>figures/</code>, <code>experiments/phase2_problem_statement.md</code> (claims discipline), and <code>results/phase5_conclusions.md</code> (audit verdict). A markdown copy of this report lives at <code>PROGRESS_REPORT.md</code> in the project root.</p>
 </div>
 
-</body></html>
+<script>
+(function () {
+  var root = document.documentElement;
+  var btn = document.getElementById('themeToggle');
+  var dark = btn.querySelector('.tb-dark');
+  var light = btn.querySelector('.tb-light');
+
+  function systemDark() {
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  function isDark() {
+    var t = root.getAttribute('data-theme');
+    if (t === 'dark') { return true; }
+    if (t === 'light') { return false; }
+    return systemDark();
+  }
+  function sync() {
+    var d = isDark();
+    dark.hidden = d;
+    light.hidden = !d;
+    btn.setAttribute('aria-pressed', d ? 'true' : 'false');
+  }
+  function apply(theme) {
+    root.setAttribute('data-theme', theme);
+    try { localStorage.setItem('report-theme', theme); } catch (e) {}
+    sync();
+  }
+
+  var stored = null;
+  try { stored = localStorage.getItem('report-theme'); } catch (e) {}
+  if (stored === 'dark' || stored === 'light') { root.setAttribute('data-theme', stored); }
+  sync();
+
+  btn.addEventListener('click', function () { apply(isDark() ? 'light' : 'dark'); });
+})();
+</script>
+
+</body>
+</html>
